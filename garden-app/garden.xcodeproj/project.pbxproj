@@ -6,7 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8EB4B1D62F9D18E1003A49F3 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EB4B1D42F9D18E1003A49F3 /* InstrumentSerif-Italic.ttf */; };
+		8EB4B1D72F9D18E1003A49F3 /* InstrumentSerif-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EB4B1D52F9D18E1003A49F3 /* InstrumentSerif-Regular.ttf */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		8EB4B1D42F9D18E1003A49F3 /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
+		8EB4B1D52F9D18E1003A49F3 /* InstrumentSerif-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Regular.ttf"; sourceTree = "<group>"; };
 		8EEDCE1B2F9D071B00FDC0C0 /* garden.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = garden.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -42,9 +49,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8EB4B1D32F9D18AE003A49F3 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				8EB4B1D42F9D18E1003A49F3 /* InstrumentSerif-Italic.ttf */,
+				8EB4B1D52F9D18E1003A49F3 /* InstrumentSerif-Regular.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		8EEDCE122F9D071B00FDC0C0 = {
 			isa = PBXGroup;
 			children = (
+				8EB4B1D32F9D18AE003A49F3 /* Fonts */,
 				8EEDCE1D2F9D071B00FDC0C0 /* garden */,
 				8EEDCE1C2F9D071B00FDC0C0 /* Products */,
 			);
@@ -122,6 +139,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8EB4B1D62F9D18E1003A49F3 /* InstrumentSerif-Italic.ttf in Resources */,
+				8EB4B1D72F9D18E1003A49F3 /* InstrumentSerif-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
