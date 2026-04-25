@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garden App — Build Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --walnut: #2C1A0E;
+    --card: #3D2410;
+    --border: #4A2E18;
+    --amber: #F2A24A;
+    --wheat: #F5DEB3;
+    --rust: #7A3B1E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--walnut);
+    color: var(--wheat);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 44px;
+    letter-spacing: -0.02em;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+
+  .description {
+    color: var(--wheat);
+    opacity: 0.75;
+    font-size: 16px;
+    margin-bottom: 16px;
+    max-width: 560px;
+  }
+
+  .meta {
+    color: var(--rust);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .meta strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .column {
+    margin-bottom: 40px;
+  }
+
+  .column-header {
+    margin-bottom: 20px;
+  }
+
+  .column-name {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 26px;
+    color: var(--wheat);
+    margin-bottom: 4px;
+  }
+
+  .column-sub {
+    color: var(--rust);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+
+  .priorities {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .priority {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 20px 20px 68px;
+    position: relative;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .priority:hover {
+    transform: translateY(-1px);
+    border-color: var(--amber);
+  }
+
+  .badge {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--amber);
+    color: var(--walnut);
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .priority-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 19px;
+    color: var(--wheat);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .priority-note {
+    color: var(--wheat);
+    opacity: 0.72;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .backlog-header {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--rust);
+    margin-bottom: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  .backlog {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .backlog li {
+    color: var(--rust);
+    font-size: 14px;
+    padding: 6px 0 6px 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .backlog li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    top: 2px;
+    color: var(--rust);
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--rust);
+    font-size: 12px;
+    font-style: italic;
+    font-family: 'Fraunces', Georgia, serif;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Garden App</h1>
+      <p class="description">Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.</p>
+      <p class="meta">Updated <strong>2026-04-24</strong> · Founding</p>
+    </header>
+
+    <div class="column">
+      <div class="column-header">
+        <div class="column-name">Garden</div>
+        <div class="column-sub">SwiftUI · SwiftData · CloudKit · iOS 17+</div>
+      </div>
+
+      <div class="priorities">
+        <div class="priority">
+          <div class="badge">1</div>
+          <div class="priority-title">Initialize Xcode project</div>
+          <div class="priority-note">Run the setup checklist in CLAUDE.md. Create the Garden Xcode project, enable CloudKit capability, add Instrument Serif, and create the 14 color assets for light/dark modes. Unblocks everything else.</div>
+        </div>
+
+        <div class="priority">
+          <div class="badge">2</div>
+          <div class="priority-title">First working capture</div>
+          <div class="priority-note">NoteComposerView plus NoteListView plus the seeded "Ideas / TBD" category. The minimum proof the app works end-to-end: write a note, see it appear, close the app, reopen, the note is still there.</div>
+        </div>
+
+        <div class="priority">
+          <div class="badge">3</div>
+          <div class="priority-title">Calm screen MVP</div>
+          <div class="priority-note">WheatFieldView with the 80-blade animation plus the One Thing card with checkbox, confetti, haptics, and daily reset. No polish yet — just a working second tab so the two-tab app is real.</div>
+        </div>
+      </div>
+
+      <div class="backlog-header">Backlog</div>
+      <ul class="backlog">
+        <li>Category management UI — add, rename, reorder, delete</li>
+        <li>Archive flow and ArchivedNotesView (collapsible section)</li>
+        <li>Export flow — markdown preview and iOS Share Sheet</li>
+        <li>Settings screen with "Export everything" option</li>
+        <li>Haptic feedback polish (checkbox impact, confetti success notification)</li>
+        <li>First-launch experience — onboarding if any, welcoming copy</li>
+        <li>Category reordering UX (sortOrder field exists, UI does not)</li>
+        <li>Quarterly recap (v2) — full spec in CLAUDE.md parking lot</li>
+      </ul>
+    </div>
+
+    <footer>ordo ab chao</footer>
+  </div>
+
+<script id="tracker-data" type="application/json">
+{
+  "project": "garden-app",
+  "description": "Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.",
+  "updated": "2026-04-24",
+  "columns": [
+    {
+      "name": "Garden",
+      "sub": "SwiftUI · SwiftData · CloudKit · iOS 17+",
+      "priorities": [
+        {
+          "title": "Initialize Xcode project",
+          "note": "Run the setup checklist in CLAUDE.md. Create the Garden Xcode project, enable CloudKit capability, add Instrument Serif, and create the 14 color assets for light/dark modes. Unblocks everything else."
+        },
+        {
+          "title": "First working capture",
+          "note": "NoteComposerView plus NoteListView plus the seeded 'Ideas / TBD' category. The minimum proof the app works end-to-end: write a note, see it appear, close the app, reopen, the note is still there."
+        },
+        {
+          "title": "Calm screen MVP",
+          "note": "WheatFieldView with the 80-blade animation plus the One Thing card with checkbox, confetti, haptics, and daily reset. No polish yet — just a working second tab so the two-tab app is real."
+        }
+      ],
+      "backlog": [
+        "Category management UI — add, rename, reorder, delete",
+        "Archive flow and ArchivedNotesView (collapsible section)",
+        "Export flow — markdown preview and iOS Share Sheet",
+        "Settings screen with 'Export everything' option",
+        "Haptic feedback polish (checkbox impact, confetti success notification)",
+        "First-launch experience — onboarding if any, welcoming copy",
+        "Category reordering UX (sortOrder field exists, UI does not)",
+        "Quarterly recap (v2) — full spec in CLAUDE.md parking lot"
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>
