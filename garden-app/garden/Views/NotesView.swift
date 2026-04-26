@@ -14,13 +14,16 @@ struct NotesView: View {
             ZStack {
                 Color.bg.ignoresSafeArea()
                 VStack(spacing: 0) {
-                    NoteComposerView(categories: categories)
                     CategoryChipsView(
                         categories: categories,
                         selectedID: $selectedCategoryID,
                         onManage: { showCategoryManager = true }
                     )
                     NoteListView(selectedCategoryID: selectedCategoryID, searchQuery: searchQuery)
+                    NoteComposerView(
+                        categories: categories,
+                        onManageCategories: { showCategoryManager = true }
+                    )
                 }
             }
             .toolbar {

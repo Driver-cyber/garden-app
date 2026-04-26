@@ -3,6 +3,7 @@ import SwiftData
 
 struct NoteComposerView: View {
     let categories: [Category]
+    var onManageCategories: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     @State private var draft: String = ""
     @State private var draftCategoryID: UUID?
@@ -25,6 +26,12 @@ struct NoteComposerView: View {
                     ForEach(categories) { cat in
                         Button(cat.name) { draftCategoryID = cat.id }
                     }
+                    Divider()
+                    Button {
+                        onManageCategories()
+                    } label: {
+                        Label("Manage categories…", systemImage: "pencil")
+                    }
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "tag")
@@ -39,15 +46,17 @@ struct NoteComposerView: View {
             }
 
             TextField("New note…", text: $draft, axis: .vertical)
-                .lineLimit(1...4)
+                .lineLimit(isComposerFocused ? 4...8 : 1...4)
                 .focused($isComposerFocused)
                 .padding(12)
+                .frame(minHeight: isComposerFocused ? 96 : 40, alignment: .top)
                 .background(Color.paper)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.line, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .animation(.easeInOut(duration: 0.18), value: isComposerFocused)
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
@@ -64,7 +73,14 @@ struct NoteComposerView: View {
                     .tint(Color.sageDeep)
             }
         }
-        .padding(14)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            Color.bg
+                .overlay(alignment: .top) {
+                    Divider().background(Color.line)
+                }
+        )
     }
 
     private var canAdd: Bool {
