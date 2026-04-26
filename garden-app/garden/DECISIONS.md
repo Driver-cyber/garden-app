@@ -6,11 +6,11 @@
 
 ## 🎯 Current Phase
 
-**Phase:** v1 polished, running on real hardware, distribution path pivoted to public App Store ASAP.
+**Phase:** Core functions locked. Ready for App Store submission.
 
-**What's next:** Continue iPhone polish testing (Chad's collecting feedback on the Calm screen as he uses it). Then the App Store submission chain: CloudKit Dashboard "Deploy Schema Changes" → host the privacy policy → capture 5 screenshots → create the ASC record → fill in the App Privacy nutrition label → Archive + Upload from Xcode → submit for App Review. After 1.0 ships, fold any remaining polish notes into 1.1 and only then share the link with wife and friends.
+**What's next:** Submission chain only — no more engineering work expected before 1.0. (1) CloudKit Dashboard "Deploy Schema Changes" for production. (2) Host the privacy policy (draft in `app-store-listing.md`). (3) Capture 5 screenshots at 6.7" iPhone size. (4) Create the App Store Connect record + fill in the App Privacy nutrition label as "Data Not Collected." (5) Archive + Distribute → App Store Connect → Upload from Xcode. (6) Submit for App Review. After 1.0 ships, anything Chad notices post-launch goes into 1.1, and only then does the link go to wife and friends.
 
-**Vibe:** The app is alive on Chad's iPhone 16e and the v1 polish pass is in: edit existing notes (inline pencil), search (`.searchable` drawer), keyboard "Done" toolbar, archive picker grouped by category, and a Calm screen redesign that swaps the horizontal "I did the one thing today" pill for the "Breathe." card matching the original web composition (big 96pt checkbox, varied wheat shades, slower confetti). The earlier Apple-side gates (real-device install, CloudKit config) are cleared. The remaining gates are submission gates, not engineering gates: privacy policy hosting, screenshots, ASC record, App Privacy answers, archive upload, App Review wait. Strategy reframe — see Decision 17 below — moves us past TestFlight Internal and straight to public submission, because the practice rep is the actual goal.
+**Vibe:** Chad signed off the polish pass on 2026-04-26 — "the core functions are there." The Calm screen is final (Breathe. card raised to upper-middle of the screen via 300pt bottom padding); the Notes side is final (edit, search, archive grouping, keyboard dismiss, all working on his iPhone 16e). The repo's 8 local commits are about to be pushed to `origin/main` and the next session opens against the App Store submission gates, not the codebase. Strategy reframe — see Decision 17 — has us going public-listing-first for the practice rep, then 1.1 before sharing with wife/friends.
 
 ---
 
