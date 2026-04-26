@@ -6,11 +6,11 @@
 
 ## 🎯 Current Phase
 
-**Phase:** Founding docs complete. Pre-implementation.
+**Phase:** v1 feature-complete. Pre-deployment.
 
-**What's next:** Initialize the `Driver-cyber/garden-app` repo, drop `CLAUDE.md` and this file into it, install Xcode, and begin the project setup checklist in the constitution.
+**What's next:** Test on a real device first (Path A — Xcode direct install, free, 7-day expiry), then enroll in Apple Developer Program, deploy CloudKit schema to production, archive and upload to TestFlight, add Chad's wife as Internal Tester. From there the app is on her phone with a real link.
 
-**Vibe:** Measure twice, cut once. This is a native iOS app being built from a working web reference — the concept is proven, the design is locked, the data model is specified. The work ahead is translation, not invention. Prefer careful faithful implementation over clever departures from the reference.
+**Vibe:** The translation phase is done. The web reference shipped to native faithfully — wheat field, One Thing card, two-tab structure, three-layer storage all working in the simulator. Next phase is deployment hygiene: hardware verification, Apple paperwork, and the small polish work the App Store demands (icon variants, listing copy, screenshots).
 
 ---
 
@@ -31,6 +31,26 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 ---
 
 ## 📝 Decision Log
+
+### 2026-04-25 — v1 implementation session
+
+**Session summary:** Took Garden from "founding docs only" to "v1 feature-complete, pre-deployment" in one sitting. Built the entire two-tab app on top of the constitution's spec: Instrument Serif fonts, 13 design tokens, SwiftData models with CloudKit, NotesView (composer + chips + list + archive section + export sheet), CalmView (wheat field + One Thing card + confetti + haptics), category management (add/rename/reorder/delete with reassignment to Ideas / TBD), and pre-deployment hardening (app icon, privacy manifest, version numbers). Ended the session at the gate before Apple Developer Program enrollment.
+
+**Decision 7: GardenColors.swift is unnecessary in modern Xcode.**
+The constitution's setup checklist called for `Design/GardenColors.swift` defining `extension Color` static vars. In Xcode 15+, the compiler auto-generates these symbols from the asset catalog at build time, so writing them manually causes "Invalid redeclaration" errors. Decision: remove `GardenColors.swift` from the checklist; rely on Xcode's auto-generation. The `Design/` folder remains as a future home for typography helpers if needed. Constitution updated in §Xcode Project Setup Checklist.
+
+**Decision 8: App icon is a sage wheat sprig on cream, generated programmatically.**
+Rather than hand-design an icon in Figma/Sketch, generated a 1024×1024 PNG via Python+Pillow: cream background (`#F2EDE3`) with a stylized wheat sprig rendered in `sageDeep` (`#35523A`) — vertical stem with six pairs of grain leaves fanning upward, plus a single apex grain. Reads as both a wheat sprig (the app's namesake imagery) and a quiet nature mark (slim conifer-adjacent). Acceptable v1 placeholder; a hand-designed replacement is a backlog item. Single universal slot only — dark and tinted variants deferred (Apple falls back gracefully).
+
+**Decision 9: Privacy Manifest declares minimum-viable disclosures.**
+`PrivacyInfo.xcprivacy` declares: `NSPrivacyTracking = false`, no tracking domains, no collected data types, and `NSPrivacyAccessedAPICategoryUserDefaults` with reason `CA92.1` (access info from same app). Garden's "we don't collect anything; CloudKit is user's own iCloud, not us" stance makes the manifest near-empty. This satisfies the May 2024 Apple requirement without committing the project to any disclosures we'd later have to walk back.
+
+**Decision 10: TestFlight Internal Testing is the chosen distribution path.**
+Discussed the full distribution landscape (Path A direct-Xcode-install, TestFlight Internal, TestFlight External with Beta App Review, Unlisted App Distribution requiring full review, Ad Hoc UDID provisioning). Chose: do Path A first this week to validate on real hardware, then proceed to TestFlight Internal once Apple Developer Program is active. Wife will be added as Internal Tester via App Store Connect — no review required, builds last 90 days. Public unlisted listing remains a possible future step but isn't load-bearing for "send a link to my wife and friends."
+
+**Sections of CLAUDE.md updated:** §Xcode Project Setup Checklist (removed the `GardenColors.swift` line item).
+
+---
 
 ### 2026-04-24 — Founding session
 

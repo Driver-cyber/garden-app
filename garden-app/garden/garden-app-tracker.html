@@ -198,7 +198,7 @@
     <header>
       <h1>Garden App</h1>
       <p class="description">Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.</p>
-      <p class="meta">Updated <strong>2026-04-24</strong> · Founding</p>
+      <p class="meta">Updated <strong>2026-04-25</strong> · v1 feature-complete · Pre-deployment</p>
     </header>
 
     <div class="column">
@@ -210,33 +210,45 @@
       <div class="priorities">
         <div class="priority">
           <div class="badge">1</div>
-          <div class="priority-title">Initialize Xcode project</div>
-          <div class="priority-note">Run the setup checklist in CLAUDE.md. Create the Garden Xcode project, enable CloudKit capability, add Instrument Serif, and create the 14 color assets for light/dark modes. Unblocks everything else.</div>
+          <div class="priority-title">Test on a real device (Path A)</div>
+          <div class="priority-note">Plug an iPhone into the Mac, select it as the run destination, ⌘R. Validates wheat field at 60fps on real hardware, haptic feel, layout on a real screen. Also: confirm One Thing date logic across an actual midnight rollover. No App Store account required.</div>
         </div>
 
         <div class="priority">
           <div class="badge">2</div>
-          <div class="priority-title">First working capture</div>
-          <div class="priority-note">NoteComposerView plus NoteListView plus the seeded "Ideas / TBD" category. The minimum proof the app works end-to-end: write a note, see it appear, close the app, reopen, the note is still there.</div>
+          <div class="priority-title">Apple Developer Program + CloudKit production</div>
+          <div class="priority-note">Enroll in Apple Developer Program ($99/yr, ~24h to activate). Then in CloudKit Dashboard, deploy the Garden schema to production — without this, real users get silent sync failures. One-click action but easy to forget.</div>
         </div>
 
         <div class="priority">
           <div class="badge">3</div>
-          <div class="priority-title">Calm screen MVP</div>
-          <div class="priority-note">WheatFieldView with the 80-blade animation plus the One Thing card with checkbox, confetti, haptics, and daily reset. No polish yet — just a working second tab so the two-tab app is real.</div>
+          <div class="priority-title">App Store Connect + TestFlight</div>
+          <div class="priority-note">Create the App Store Connect record, archive in Xcode (Product → Archive → Distribute → Upload), wait ~5–15 min for processing, add wife as Internal Tester. She installs TestFlight, accepts the email invite, taps Install. First public-ish deployment.</div>
         </div>
       </div>
 
       <div class="backlog-header">Backlog</div>
       <ul class="backlog">
-        <li>Category management UI — add, rename, reorder, delete</li>
-        <li>Archive flow and ArchivedNotesView (collapsible section)</li>
-        <li>Export flow — markdown preview and iOS Share Sheet</li>
-        <li>Settings screen with "Export everything" option</li>
-        <li>Haptic feedback polish (checkbox impact, confetti success notification)</li>
-        <li>First-launch experience — onboarding if any, welcoming copy</li>
-        <li>Category reordering UX (sortOrder field exists, UI does not)</li>
+        <li>App Store Connect listing copy — description, keywords, screenshots, privacy nutrition label, support URL</li>
+        <li>Settings screen with "Export everything" option (constitution-required for Layer 3 storage)</li>
+        <li>First-launch experience — onboarding flow if any, welcoming copy</li>
+        <li>Dark and tinted app icon variants (currently only universal/light is wired)</li>
+        <li>Swipe-to-archive on note rows (replaces the explicit Archive button)</li>
         <li>Quarterly recap (v2) — full spec in CLAUDE.md parking lot</li>
+        <li>"One Thing" widget for home screen — parking lot item</li>
+      </ul>
+
+      <div class="backlog-header" style="margin-top: 32px;">Shipped this session (2026-04-25)</div>
+      <ul class="backlog">
+        <li>Xcode project initialized — fonts, 13 design tokens, SwiftData models, CloudKit container, seed</li>
+        <li>NotesView: composer, category chips, list, archive, "Ideas / TBD" filter</li>
+        <li>CalmView: 80-blade wheat field via TimelineView+Canvas, sky gradient</li>
+        <li>OneThingCard with confetti burst, medium+success haptics, midnight reset via @AppStorage</li>
+        <li>ExportSheet — markdown preview, Copy + ShareLink, two-step archive picker</li>
+        <li>CategoryManagerSheet — add, rename, reorder, delete (reassigns to Ideas / TBD)</li>
+        <li>ArchivedNotesSection — collapsible section in Notes list with Restore</li>
+        <li>App icon (sage wheat sprig on cream, 1024×1024)</li>
+        <li>PrivacyInfo.xcprivacy — declares no tracking, UserDefaults reason CA92.1</li>
       </ul>
     </div>
 
@@ -247,34 +259,45 @@
 {
   "project": "garden-app",
   "description": "Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.",
-  "updated": "2026-04-24",
+  "updated": "2026-04-25",
+  "phase": "v1 feature-complete · Pre-deployment",
   "columns": [
     {
       "name": "Garden",
       "sub": "SwiftUI · SwiftData · CloudKit · iOS 17+",
       "priorities": [
         {
-          "title": "Initialize Xcode project",
-          "note": "Run the setup checklist in CLAUDE.md. Create the Garden Xcode project, enable CloudKit capability, add Instrument Serif, and create the 14 color assets for light/dark modes. Unblocks everything else."
+          "title": "Test on a real device (Path A)",
+          "note": "Plug an iPhone into the Mac, select it as the run destination, ⌘R. Validates wheat field at 60fps on real hardware, haptic feel, layout on a real screen. Also: confirm One Thing date logic across an actual midnight rollover. No App Store account required."
         },
         {
-          "title": "First working capture",
-          "note": "NoteComposerView plus NoteListView plus the seeded 'Ideas / TBD' category. The minimum proof the app works end-to-end: write a note, see it appear, close the app, reopen, the note is still there."
+          "title": "Apple Developer Program + CloudKit production",
+          "note": "Enroll in Apple Developer Program ($99/yr, ~24h to activate). Then in CloudKit Dashboard, deploy the Garden schema to production — without this, real users get silent sync failures. One-click action but easy to forget."
         },
         {
-          "title": "Calm screen MVP",
-          "note": "WheatFieldView with the 80-blade animation plus the One Thing card with checkbox, confetti, haptics, and daily reset. No polish yet — just a working second tab so the two-tab app is real."
+          "title": "App Store Connect + TestFlight",
+          "note": "Create the App Store Connect record, archive in Xcode (Product → Archive → Distribute → Upload), wait ~5–15 min for processing, add wife as Internal Tester. She installs TestFlight, accepts the email invite, taps Install. First public-ish deployment."
         }
       ],
       "backlog": [
-        "Category management UI — add, rename, reorder, delete",
-        "Archive flow and ArchivedNotesView (collapsible section)",
-        "Export flow — markdown preview and iOS Share Sheet",
-        "Settings screen with 'Export everything' option",
-        "Haptic feedback polish (checkbox impact, confetti success notification)",
-        "First-launch experience — onboarding if any, welcoming copy",
-        "Category reordering UX (sortOrder field exists, UI does not)",
-        "Quarterly recap (v2) — full spec in CLAUDE.md parking lot"
+        "App Store Connect listing copy — description, keywords, screenshots, privacy nutrition label, support URL",
+        "Settings screen with 'Export everything' option (constitution-required for Layer 3 storage)",
+        "First-launch experience — onboarding flow if any, welcoming copy",
+        "Dark and tinted app icon variants (currently only universal/light is wired)",
+        "Swipe-to-archive on note rows (replaces the explicit Archive button)",
+        "Quarterly recap (v2) — full spec in CLAUDE.md parking lot",
+        "'One Thing' widget for home screen — parking lot item"
+      ],
+      "shipped_this_session": [
+        "Xcode project initialized — fonts, 13 design tokens, SwiftData models, CloudKit container, seed",
+        "NotesView: composer, category chips, list, archive, Ideas / TBD filter",
+        "CalmView: 80-blade wheat field via TimelineView+Canvas, sky gradient",
+        "OneThingCard with confetti burst, medium+success haptics, midnight reset via @AppStorage",
+        "ExportSheet — markdown preview, Copy + ShareLink, two-step archive picker",
+        "CategoryManagerSheet — add, rename, reorder, delete (reassigns to Ideas / TBD)",
+        "ArchivedNotesSection — collapsible section in Notes list with Restore",
+        "App icon (sage wheat sprig on cream, 1024x1024)",
+        "PrivacyInfo.xcprivacy — declares no tracking, UserDefaults reason CA92.1"
       ]
     }
   ]

@@ -1,0 +1,40 @@
+[
+  {
+    "date": "2026-04-25",
+    "session": "v1 implementation",
+    "summary": "Founding-docs-only repo to v1 feature-complete in one session. Built two tabs end-to-end on simulator.",
+    "completed": [
+      "Xcode project initialization — Instrument Serif fonts bundled and registered, 13 design tokens as Color Sets in Assets.xcassets (light + dark)",
+      "SwiftData models — Note (id, categoryID, text, createdAt, status), Category (id, name, createdAt, sortOrder), NoteStatus enum (active, archived); CloudKit-friendly defaults on every property",
+      "ModelContainer wiring with cloudKitDatabase: .automatic via the entitlement; first-launch seed of 'Ideas / TBD' category persisted to UserDefaults under garden.tbd.categoryID",
+      "TabView shell — Notes (pencil) + Calm (leaf) with sage tint",
+      "NoteComposerView — category picker (Menu), multi-line TextField, sage Add button; empty-trim validation",
+      "CategoryChipsView — All chip + dynamic categories + dashed '+' to manage",
+      "NoteListView — @Query sorted by createdAt desc, filtered by selected category, in-memory filter (avoids predicate quirks with Codable enums)",
+      "NoteRowView — paper card with monospaced caption tags, ink body, archive button",
+      "WheatFieldView — TimelineView(.animation) + Canvas, 80 stable @State-seeded blades, sin-based sway with phase offset for traveling-wave effect",
+      "OneThingCard — checkbox + italic label, @AppStorage('garden.oneThingCheckedAt') as TimeInterval, isCheckedToday derived via Calendar.current.isDateInToday",
+      "ConfettiView — 26 pieces in palette colors (sageDeep/sageSoft/blush/wheat/sky), spring outward + fade over ~1.4s, retriggered via Int counter",
+      "Haptics — UIImpactFeedbackGenerator(.medium) on check, .notificationOccurred(.success) chained 0.15s later for confetti",
+      "ExportSheet — two-step: markdown preview with category filter + Copy + ShareLink (.md), then archive picker (Archive checked / Keep all active)",
+      "ExportMarkdown helper — groups notes by category, sorted by name, formatted dates, includes 'Exported {timestamp}' header",
+      "CategoryManagerSheet — List with Bindable rename, EditMode reorder via onMove, swipe-to-delete with confirmation dialog showing note count + 'will move to Ideas / TBD'; Ideas / TBD itself protected via tbdID guard",
+      "ArchivedNotesSection — collapsible (chevron + 'Archived (N)' header), embedded inside NoteListView's ScrollView, ArchivedNoteRow with Restore button",
+      "App icon — programmatically generated via Python+Pillow, 1024×1024 sage wheat sprig on cream, single universal slot in AppIcon.appiconset",
+      "PrivacyInfo.xcprivacy — no tracking, no domains, no collected data types, NSPrivacyAccessedAPICategoryUserDefaults with reason CA92.1"
+    ],
+    "decisions": [
+      "Removed GardenColors.swift from setup checklist — Xcode 15+ auto-generates Color extensions from asset catalogs, so manual extension causes 'Invalid redeclaration' errors",
+      "Path A (Xcode direct install on physical device) recommended before Path B (TestFlight) to validate on real hardware first",
+      "TestFlight Internal Testing chosen as distribution path; wife to be added as Internal Tester (no Beta App Review needed)",
+      "App icon dark and tinted variants deferred — single universal slot is sufficient for v1 (Apple falls back gracefully)"
+    ],
+    "gotchas": [
+      "Xcode 15+ auto-generates static vars on Color from asset catalogs — don't write your own extension Color { static let bg = Color('bg') } or you get redeclaration errors per token",
+      "SwiftData @Query predicates with Codable enum properties (like NoteStatus) are unreliable in iOS 17 — filter in memory instead",
+      "Synchronized folders in Xcode 16 mean files added to disk auto-import; deleting from disk auto-removes from project. No more pbxproj hand-editing",
+      "Bundle version in Info.plist references $(CURRENT_PROJECT_VERSION) and $(MARKETING_VERSION), which live in Build Settings — don't edit Info.plist directly"
+    ],
+    "next_session_starting_point": "Plug in a real iPhone, ⌘R, validate the app on hardware. Tune wheat field if needed (tunables at top of WheatFieldView.swift: bladeCount, waves, periodSeconds, maxAngleDegrees). After hardware sign-off, begin Apple Developer Program enrollment — that's the gate for everything else (TestFlight, CloudKit production deploy, App Store Connect)."
+  }
+]

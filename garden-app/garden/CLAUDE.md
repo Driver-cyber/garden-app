@@ -294,8 +294,8 @@ The Share button uses `ShareLink` (SwiftUI native) — supports AirDrop, Notes, 
 - [ ] Enable CloudKit capability: `Signing & Capabilities → + Capability → iCloud → CloudKit`
 - [ ] Create CloudKit container: `iCloud.com.drivercyber.garden`
 - [ ] Add `Instrument Serif` font files to project, register in `Info.plist` under `UIAppFonts`
-- [ ] Create `Assets.xcassets` Color Sets for all 14 design tokens above (light + dark each)
-- [ ] Create `Design/GardenColors.swift` — `extension Color` with static vars using those asset names
+- [ ] Create `Assets.xcassets` Color Sets for all 13 design tokens above (light + dark each)
+- [ ] ~~Create `Design/GardenColors.swift`~~ — *not needed in Xcode 15+. The compiler auto-generates `Color.bg`, `Color.ink`, etc. from the asset catalog. Writing them manually causes "Invalid redeclaration" errors.*
 - [ ] Seed "Ideas / TBD" category on first launch (check `UserDefaults.standard.bool(forKey: "garden.seeded")`)
 
 ---
