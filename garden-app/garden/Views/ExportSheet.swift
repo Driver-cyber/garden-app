@@ -148,15 +148,34 @@ struct ExportSheet: View {
 
     // MARK: Archive
 
+    private var groupedSections: [(category: Category?, notes: [Note])] {
+        let grouped = Dictionary(grouping: exportNotes, by: \.categoryID)
+        let pairs: [(Category?, [Note])] = grouped.map { cid, notes in
+            let cat = categories.first(where: { $0.id == cid })
+            return (cat, notes)
+        }
+        return pairs.sorted { lhs, rhs in
+            (lhs.0?.sortOrder ?? .max) < (rhs.0?.sortOrder ?? .max)
+        }
+    }
+
     private var archiveView: some View {
         VStack(spacing: 0) {
             ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(exportNotes) { note in
-                        ArchiveCheckRow(
-                            note: note,
-                            isSelected: notesToArchive.contains(note.id)
-                        ) { toggle(note.id) }
+                LazyVStack(alignment: .leading, spacing: 8, pinnedViews: []) {
+                    ForEach(groupedSections, id: \.category?.id) { section in
+                        Text(section.category?.name ?? "—")
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(Color.ink3)
+                            .padding(.top, 6)
+                            .padding(.horizontal, 4)
+
+                        ForEach(section.notes) { note in
+                            ArchiveCheckRow(
+                                note: note,
+                                isSelected: notesToArchive.contains(note.id)
+                            ) { toggle(note.id) }
+                        }
                     }
                 }
                 .padding()
