@@ -12,7 +12,11 @@ import SwiftData
 struct gardenApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Note.self, Category.self])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .automatic
+        )
         do {
             return try ModelContainer(for: schema, configurations: [configuration])
         } catch {

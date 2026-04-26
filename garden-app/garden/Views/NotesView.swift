@@ -6,6 +6,7 @@ struct NotesView: View {
     @State private var selectedCategoryID: UUID?
     @State private var showExport: Bool = false
     @State private var showCategoryManager: Bool = false
+    @State private var showSettings: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,14 @@ struct NotesView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .foregroundStyle(Color.sageDeep)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showExport = true
@@ -36,6 +45,9 @@ struct NotesView: View {
             }
             .sheet(isPresented: $showCategoryManager) {
                 CategoryManagerSheet()
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
             }
         }
     }

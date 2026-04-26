@@ -6,11 +6,11 @@
 
 ## 🎯 Current Phase
 
-**Phase:** v1 feature-complete. Pre-deployment.
+**Phase:** v1 feature-complete + listing-ready + CloudKit-fixed. Pre-deployment.
 
-**What's next:** Test on a real device first (Path A — Xcode direct install, free, 7-day expiry), then enroll in Apple Developer Program, deploy CloudKit schema to production, archive and upload to TestFlight, add Chad's wife as Internal Tester. From there the app is on her phone with a real link.
+**What's next:** Run the app once (simulator or real device) so SwiftData registers the now-correct CloudKit schema with the development environment. Then test on a real device (Path A — Xcode direct install, free, 7-day expiry). Apple Developer Program is active (enrolled 2026-04-24). Then deploy CloudKit schema to production, create the App Store Connect record, archive and upload to TestFlight, add Chad's wife as Internal Tester. From there the app is on her phone with a real link.
 
-**Vibe:** The translation phase is done. The web reference shipped to native faithfully — wheat field, One Thing card, two-tab structure, three-layer storage all working in the simulator. Next phase is deployment hygiene: hardware verification, Apple paperwork, and the small polish work the App Store demands (icon variants, listing copy, screenshots).
+**Vibe:** The translation phase is done. The web reference shipped to native faithfully — wheat field, One Thing card, two-tab structure, three-layer storage all working in the simulator. Pre-deployment polish round closed: Settings sheet with "Export everything" (Layer 3 made user-visible), dark and tinted app icon variants for iOS 18, and a complete `app-store-listing.md` with description / keywords / "What to Test" / privacy policy / screenshots backlog. A code review caught two CloudKit blockers (silent SwiftData misconfiguration + empty entitlement container) that would have shipped a non-syncing app; both fixed. The remaining work is Apple-side: real-device test, CloudKit production deploy, ASC record, archive upload.
 
 ---
 
@@ -31,6 +31,47 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 ---
 
 ## 📝 Decision Log
+
+### 2026-04-25 (latest) — code review + CloudKit fix
+
+**Session summary:** Chad asked for a code review and honest evaluation of how the v1 build was executing. Read the full Swift surface (~1,300 lines across 20 files) and surfaced two blockers plus a handful of minor cleanups. The two blockers were both about CloudKit, both silent, and both would have shipped to TestFlight without anyone noticing until users with multiple Apple devices reported missing sync. Fixed all three of the immediately-actionable items in one pass.
+
+**Decision 14: ModelConfiguration must explicitly opt into CloudKit; entitlement alone is not enough.**
+The CloudKit entitlement was on, the iCloud capability was checked, but `gardenApp.swift` built its `ModelContainer` with `ModelConfiguration(schema:isStoredInMemoryOnly:)` — a constructor that defaults `cloudKitDatabase` to `.none`. Result: SwiftData was a pure local store. The constitution's example used the simpler `.modelContainer(for: [...], cloudKitDatabase: .automatic)` scene-modifier form, which makes the parameter unmissable; the hand-rolled container path doesn't. Fix: pass `cloudKitDatabase: .automatic` to `ModelConfiguration`. Lesson: when a CloudKit-mirrored SwiftData schema is required, the configuration parameter is load-bearing — verify it on every container init, not just at the entitlement layer.
+
+**Decision 15: The CloudKit container ID belongs in the entitlement file, explicitly.**
+`garden.entitlements` had `com.apple.developer.icloud-services` set to `CloudKit` but `com.apple.developer.icloud-container-identifiers` as an empty array. Without a container ID listed, the entitlement is effectively decorative. Fix: added `iCloud.com.drivercyber.garden` to the identifiers array. Together with Decision 14, this is what actually wires SwiftData → CloudKit at runtime. Both are five-line fixes that would have been invisible on the simulator and only surfaced when a TestFlight tester signed into a second device.
+
+**Decision 16: Delete the Xcode template's `Item.swift`.**
+The default project template generates an `@Model class Item { var timestamp: Date }`. It was never added to the Schema and never referenced by any view, but it sat in the source tree as dead code. Removed. Xcode 16 synchronized folders auto-update the project on next open.
+
+**Other findings noted but deferred** (not blocking TestFlight, captured for a future cleanup pass):
+- The string `"garden.tbd.categoryID"` and `"garden.seeded"` appear in three files; one typo away from a silently broken seed. Should become a `DefaultsKeys` enum.
+- `NoteRowView` declares `@Bindable var note` but never uses two-way binding; plain `let note: Note` would suffice.
+- `seedIfNeeded()` runs in `.task` on `ContentView`, so on first launch the composer/chips render briefly before the seed completes. Today it's invisibly fast; could become visible as a one-frame flash on slow cold starts.
+
+**Sections of CLAUDE.md updated:** none — the constitution's storage section already specified CloudKit-via-`.automatic`. This was implementation drift from the spec, caught and corrected.
+
+**One impact on the deployment plan:** the CloudKit Dashboard "Deploy Schema Changes" step now requires that the app be run *at least once* with the corrected configuration, so SwiftData registers the development schema with CloudKit. Before the fix, the dev schema would have been empty and the production deploy would have had nothing to push.
+
+---
+
+### 2026-04-25 (later) — pre-deployment polish
+
+**Session summary:** Picked up after compact and executed three pre-approved polish items in one pass: a Settings sheet exposing the "Export everything" path required by the constitution's Layer 3 storage philosophy, dark + tinted (iOS 18 luminance) app icon variants generated programmatically, and a complete `app-store-listing.md` with every field App Store Connect will ask for. No new architectural moves; this round was about making the v1 build deployment-ready.
+
+**Decision 11: Settings is a sheet on Notes, not a third tab.**
+The constitution explicitly locks the app at two tabs (Notes + Calm). Adding a Settings tab would have violated that rule. Decision: present `SettingsView` from a gear toolbar item on the top-leading edge of `NotesView`, with the existing share button moved to top-trailing. Settings contains three cards — About (app name, tagline, version from Info.plist), Storage ("Export everything" with an archived-notes toggle, Copy, ShareLink), and a small storage-philosophy note explaining the three-layer model in user terms. Rationale: the Calm screen stays untouched (single-purpose), the tab bar stays at two, and the Layer 3 export is now permanently one tap away from anywhere in the app.
+
+**Decision 12: Icon variants are generated programmatically with the same sprig.**
+Rather than hand-design three icons, extended the existing Pillow generator (`/tmp/generate_garden_icons.py`) to render the same sage-wheat-sprig silhouette in three palettes: light (cream bg, sage-deep stem), dark (ink-dark bg, cream stem), and tinted (black bg, white stem — iOS 18 tints by luminance). All three saved into `AppIcon.appiconset` with `Contents.json` declaring the appearances. The hand-designed replacement remains a v2 backlog item. Trade-off: programmatic icons are visibly less polished than a designer's icon, but consistent across all three modes and trivially regenerable; for v1 distribution to wife/friends this is right.
+
+**Decision 13: App Store listing copy lives in-repo as a markdown doc.**
+Drafted `garden-app/garden/app-store-listing.md` with every field App Store Connect requires: app name, subtitle, promotional text, full description (~2.1k chars), keywords, support URL guidance, privacy policy draft text (ready to host), nutrition-label answer, age rating, category, copyright, "What to Test" notes, a tester invite email, post-upload workflow checklist, and a screenshots backlog. The description is faithful to the constitution: it leans into the anti-patterns ("no notifications, no streaks") rather than softening them. Rationale: keep the source of truth in the repo so it versions with the app; treat ASC as a paste target rather than a place to compose copy. Privacy Policy hosting + screenshots remain backlog items but are isolated from the code.
+
+**Sections of CLAUDE.md updated:** none — the constitution's Settings/Export and Anti-Patterns sections already specified all three of these; this round was implementation against existing spec.
+
+---
 
 ### 2026-04-25 — v1 implementation session
 
