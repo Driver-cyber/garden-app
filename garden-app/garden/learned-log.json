@@ -82,5 +82,42 @@
       "Xcode 16's synchronized folders auto-update the project file when source files are added or removed on disk — no need to hand-edit project.pbxproj after deleting Item.swift."
     ],
     "next_session_starting_point": "Run the app once on simulator (or real device) so SwiftData registers the now-correct CloudKit dev schema. Then proceed with the original plan: real-device smoke test (Path A) → CloudKit Dashboard 'Deploy Schema Changes' → ASC record → Archive + Upload → TestFlight Internal Tester invites. A scheduled check-in cron is set for 2026-04-28 09:57 PDT to ping on TestFlight progress (session-only, may not survive a Claude restart)."
+  },
+  {
+    "date": "2026-04-26",
+    "session": "real-device install + polish pass + App-Store-first pivot",
+    "summary": "Long single sitting that spanned three threads: (1) got Garden onto Chad's iPhone 16e via Path A after debugging deployment-target mismatch, codesign trust, dyld extraction, and disk-space exhaustion; (2) ran a polish pass driven by Chad's live feedback while testing on the device; (3) Chad reframed the distribution strategy mid-session — public App Store submission ASAP for the practice rep, then a 1.1 update before sharing with wife/friends.",
+    "completed": [
+      "Path A real-device install — chained through iOS deployment-target mismatch (lowered 26.4 → 17.6), Mac keychain codesign authorization, 'Trust This Computer' on iPhone, iOS Developer Mode, and finally a disk-space cleanup (cleared ~836MB DerivedData + ~6.6GB iOS DeviceSupport, freed disk from 10GB to 18GB) which unblocked dyld_shared_cache_extract_dylibs. App now runs on Chad's iPhone 16e.",
+      "NoteComposerView — keyboard 'Done' toolbar item (ToolbarItemGroup placement: .keyboard) dismisses @FocusState; addNote() also drops focus on save",
+      "NoteListView — searchQuery parameter, case-insensitive substring filter on note.text, scrollDismissesKeyboard(.interactively), empty-state messaging that adapts to the query",
+      "NotesView — searchable(text:placement:.navigationBarDrawer(displayMode: .automatic), prompt:) hooks the system search bar into the navigation chrome",
+      "NoteRowView — inline edit mode: pencil button toggles isEditing @State, TextField bound to a draft, Save (writes trimmed text back to note) and Cancel (discards) buttons; existing Archive button preserved alongside",
+      "ExportSheet archive picker — Dictionary(grouping: by:) with Category? sort by sortOrder; renders monospaced caption headers above each section instead of a flat list",
+      "OneThingCard — full vertical redesign matching the original web composition: 'Breathe.' (Instrument Serif italic 44pt) headline, 'One thing. One breath. One check.' subheadline, 96pt rounded-square checkbox (sageDeep fill + paper checkmark when checked, bg fill + line stroke when not), italic serif 'Tap when you've done the one thing.' footer; entire card stays tappable via Button wrapper",
+      "WheatFieldView — per-blade shadeIndex into a 5-shade palette generated at draw time via UIColor HSB extraction with brightness offsets [-0.20, -0.10, 0, +0.08, +0.16]; respects light/dark Color.wheat asset variants",
+      "ConfettiView — replaced .spring(0.7, 0.55) with .easeOut(duration: 1.6) so pieces drift instead of fling; piece-removal deadline 1.4s → 2.6s",
+      "CalmView — OneThingCard bottom padding 200 → 160 to fit the now-taller card cleanly above the wheat field",
+      "Memory — saved feedback_two_tab_simplicity.md ('Notes + Calm only; secondary surfaces go through Settings/menu') and rewrote project_distribution_goal.md to reflect the App-Store-first pivot",
+      "DECISIONS.md — added 2026-04-26 entry (Decisions 17, 18, 19); current-phase block rewritten to reflect submission gates rather than engineering gates",
+      "garden-app-tracker.html — restructured priorities for App Store path (CloudKit deploy → privacy policy hosting → screenshots → ASC record → archive upload → 1.0/1.1 cadence); JSON tracker-data block kept in sync"
+    ],
+    "decisions": [
+      "Distribution pivots from TestFlight Internal first to public App Store first, for the practice rep — Chad wants to learn ASC submission, App Review wait, and metadata-rejection patterns on a personal low-stakes app. Friends never see 1.0; they see 1.1.",
+      "Two-tab simplicity is now an explicit, locked feedback memory — secondary surfaces (reporting, recap, exports) route through Settings or contextual menus, never as new top-level tabs. Treat any 'add a tab' suggestion as a constitution-level change.",
+      "Polish-pass commits stand alone (one coherent slice each); doc updates land in their own commit so diffs are reviewable as documentation. Going-forward default.",
+      "CloudKit deploy paused intentionally while Chad collects polish feedback on the device; the deploy is still required before any TestFlight or App Store build, but isn't blocking dev-build testing on his iPhone."
+    ],
+    "gotchas": [
+      "iOS deployment target ≠ iOS SDK target — Chad's iPhone on 26.3.1 couldn't install builds compiled against 26.4 even though Xcode was newer than the device. Lowering Minimum Deployments to 17.6 fixed it; modern iOS APIs the app actually uses are all 17+.",
+      "dyld_shared_cache_extract_dylibs failure on first device install was a disk-space symptom, not a Developer Mode or Xcode-version symptom. Always check Available Storage before going down the codesign / Developer Mode rabbit hole.",
+      "ENOSPC on rm -rf ~/Library/Developer/Xcode/DerivedData itself means the disk is so full that even unlinking files needs free space for the journal — clear smaller things first (iOS DeviceSupport, then DerivedData chunks).",
+      "CloudKit Console dev → production deploy: dev builds auto-connect to Development (auto-creates schema), TestFlight + App Store builds connect to Production. The 'Deploy Schema Changes' button location is hidden in the redesigned Console — likely behind Settings, per-environment view, or per-record-type action menu.",
+      "When SwiftUI .searchable is placed on a NavigationStack child, .navigationBarDrawer(displayMode: .automatic) integrates with the nav chrome and gives the iOS-native pull-down behavior. Other placements render the bar in unexpected spots.",
+      "@FocusState property on a parent view + .focused($state) on a TextField + a ToolbarItemGroup(.keyboard) item that flips the state to false is the cleanest way to do programmatic keyboard dismissal in SwiftUI. .scrollDismissesKeyboard(.interactively) layers on swipe-to-dismiss on top.",
+      "Dictionary(grouping: by:) returns an unordered dictionary; always sort the resulting key→array pairs explicitly before .map-ing into ForEach, otherwise section ordering is non-deterministic across runs.",
+      "Color.wheat → UIColor → getHue/saturation/brightness/alpha → adjusted UIColor → Color is a clean way to derive shade variants from a semantic asset color while preserving its dark-mode variant. Cache the palette per draw, not per blade."
+    ],
+    "next_session_starting_point": "Chad is testing the polish on his iPhone and collecting more notes. When he's done collecting, the next gates are App Store submission gates, not engineering gates: (1) hunt the CloudKit Dashboard 'Deploy Schema Changes' button in the redesigned Console — try Settings sidebar, per-environment view, or per-record-type action menus; (2) host the privacy policy (draft in app-store-listing.md → GitHub Pages or published iCloud note); (3) capture 5 screenshots at 6.7\" iPhone size from the device or simulator; (4) create the ASC record and fill in the App Privacy nutrition label as 'Data Not Collected'; (5) Archive + Upload from Xcode; (6) submit for App Review. After 1.0 ships, fold any remaining polish into 1.1 and only then share the link with wife/friends."
   }
 ]

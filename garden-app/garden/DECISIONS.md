@@ -6,11 +6,11 @@
 
 ## 🎯 Current Phase
 
-**Phase:** v1 feature-complete + listing-ready + CloudKit-fixed. Pre-deployment.
+**Phase:** v1 polished, running on real hardware, distribution path pivoted to public App Store ASAP.
 
-**What's next:** Run the app once (simulator or real device) so SwiftData registers the now-correct CloudKit schema with the development environment. Then test on a real device (Path A — Xcode direct install, free, 7-day expiry). Apple Developer Program is active (enrolled 2026-04-24). Then deploy CloudKit schema to production, create the App Store Connect record, archive and upload to TestFlight, add Chad's wife as Internal Tester. From there the app is on her phone with a real link.
+**What's next:** Continue iPhone polish testing (Chad's collecting feedback on the Calm screen as he uses it). Then the App Store submission chain: CloudKit Dashboard "Deploy Schema Changes" → host the privacy policy → capture 5 screenshots → create the ASC record → fill in the App Privacy nutrition label → Archive + Upload from Xcode → submit for App Review. After 1.0 ships, fold any remaining polish notes into 1.1 and only then share the link with wife and friends.
 
-**Vibe:** The translation phase is done. The web reference shipped to native faithfully — wheat field, One Thing card, two-tab structure, three-layer storage all working in the simulator. Pre-deployment polish round closed: Settings sheet with "Export everything" (Layer 3 made user-visible), dark and tinted app icon variants for iOS 18, and a complete `app-store-listing.md` with description / keywords / "What to Test" / privacy policy / screenshots backlog. A code review caught two CloudKit blockers (silent SwiftData misconfiguration + empty entitlement container) that would have shipped a non-syncing app; both fixed. The remaining work is Apple-side: real-device test, CloudKit production deploy, ASC record, archive upload.
+**Vibe:** The app is alive on Chad's iPhone 16e and the v1 polish pass is in: edit existing notes (inline pencil), search (`.searchable` drawer), keyboard "Done" toolbar, archive picker grouped by category, and a Calm screen redesign that swaps the horizontal "I did the one thing today" pill for the "Breathe." card matching the original web composition (big 96pt checkbox, varied wheat shades, slower confetti). The earlier Apple-side gates (real-device install, CloudKit config) are cleared. The remaining gates are submission gates, not engineering gates: privacy policy hosting, screenshots, ASC record, App Privacy answers, archive upload, App Review wait. Strategy reframe — see Decision 17 below — moves us past TestFlight Internal and straight to public submission, because the practice rep is the actual goal.
 
 ---
 
@@ -32,7 +32,24 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 
 ## 📝 Decision Log
 
-### 2026-04-25 (latest) — code review + CloudKit fix
+### 2026-04-26 (latest) — real-device install, polish pass, App-Store-first pivot
+
+**Session summary:** Spanned three threads in one long sitting. (1) Got the app onto Chad's iPhone 16e via Path A — a chain of issues from iOS deployment-target mismatch (26.4 → 17.6) through codesign trust, dyld extraction, and finally a disk-space cleanup (DerivedData + iOS DeviceSupport, ~7.4 GB freed) that unblocked the install. (2) After Chad started testing on the device, ran a polish pass against his live feedback: keyboard "Done" toolbar dismiss, search bar (`.searchable` navigation drawer + scroll-to-dismiss), inline edit on existing notes (pencil button toggles a TextField with Save/Cancel), archive picker grouped by category headers, and a Calm screen redesign that pulls the original web layout into the native card — italic serif "Breathe." headline, "One thing. One breath. One check." subtitle, 96pt rounded checkbox, "Tap when you've done the one thing." footer; wheat blades now pick from a 5-shade brightness palette for texture; confetti slowed from a snappy 0.7s spring to an `.easeOut(1.6)` drift with 2.6s removal. (3) Chad reframed the distribution strategy mid-session — the new path is public App Store submission ASAP, then a 1.1 update before sharing with friends.
+
+**Decision 17: Distribution path is public App Store first, *for the practice rep*; share with wife/friends only after 1.0 → 1.1.**
+The earlier plan (Decision 10) was TestFlight Internal first → wife as tester → maybe public listing later. New plan: submit a slightly rough 1.0 to the public App Store as soon as the gates are cleared, treat App Review as the rehearsal, then push a 1.1 update with whatever polish surfaced post-launch *before* sending the link to wife and friends. So friends never see 1.0 — they see 1.1 on a real public listing. Reasoning: TestFlight Internal skips the actual App Store experience (review queue, metadata rejection patterns, ASC submission ergonomics), and Garden is the perfect low-stakes testbed for those skills. The "rough 1.0 → polish in update" rhythm is the standard real-world cadence and worth practicing once on a personal app where nothing depends on the launch. Implications: privacy policy hosting becomes load-bearing (required for public listings, was optional for TestFlight Internal); screenshots are required (5 in 6.7" sizing per `app-store-listing.md`); App Privacy nutrition label fill-in becomes part of the submission step; rejection feedback is *expected*, not a failure mode. TestFlight Internal Tester invites move to a backlog item — possibly used for 1.1 candidate builds before the public update lands, but no longer the primary distribution surface.
+
+**Decision 18: Two-tab simplicity is locked — secondary surfaces go through Settings or a menu.**
+Chad reaffirmed mid-session that he loves the Notes + Calm two-screen structure and wants to preserve it. Constitutionally this was already covered by `CLAUDE.md`'s "Two tabs only" rule, but the new framing extends it: it's not just "no third tab right now" — it's *"any new surface (reporting, recap, stats, exports, etc.) routes through Settings or a contextual menu, never as a top-level tab."* Quarterly Recap (v2) already follows this (lives as a card on Notes); future surfaces should too. When proposing a new feature, the entry-point should be specified up front as "reachable from Settings/menu" so this can be sanity-checked before code is written. Treat any "let's add a tab" suggestion as a constitution-level change, not a normal feature decision. Saved as a feedback memory.
+
+**Decision 19: Polish-pass commits stand alone; doc updates land in their own commit.**
+Three feature commits this session — `f78b104` (edit + keyboard + search + deployment target), `5d74622` (archive picker grouping), `55974f7` (Calm redesign). Each commit covers one coherent slice of the polish pass; doc updates (this file, the tracker, learned-log, memory) land in a separate commit so the diff is reviewable as documentation, not mixed with feature changes. This is the cleaner default going forward — features and docs in separate commits unless they're tightly coupled.
+
+**Sections of CLAUDE.md updated:** none — the two-tab rule was already in CLAUDE.md; Decision 18 is a refinement, not a new principle. The distribution pivot is decision-level (lives here), not constitution-level.
+
+---
+
+### 2026-04-25 — code review + CloudKit fix
 
 **Session summary:** Chad asked for a code review and honest evaluation of how the v1 build was executing. Read the full Swift surface (~1,300 lines across 20 files) and surfaced two blockers plus a handful of minor cleanups. The two blockers were both about CloudKit, both silent, and both would have shipped to TestFlight without anyone noticing until users with multiple Apple devices reported missing sync. Fixed all three of the immediately-actionable items in one pass.
 

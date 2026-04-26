@@ -198,7 +198,7 @@
     <header>
       <h1>Garden App</h1>
       <p class="description">Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.</p>
-      <p class="meta">Updated <strong>2026-04-25</strong> · v1 feature-complete · CloudKit-fixed · Pre-deployment</p>
+      <p class="meta">Updated <strong>2026-04-26</strong> · v1 polished · running on iPhone · App-Store-first submission</p>
     </header>
 
     <div class="column">
@@ -210,50 +210,81 @@
       <div class="priorities">
         <div class="priority">
           <div class="badge">1</div>
-          <div class="priority-title">Run once with the CloudKit fix in place</div>
-          <div class="priority-note">A 2026-04-25 code review caught two silent CloudKit blockers: <code>ModelConfiguration</code> was missing <code>cloudKitDatabase: .automatic</code>, and the entitlement's container-identifier array was empty. Both fixed. Now run the app once (simulator or device) so SwiftData registers the dev schema with CloudKit — without this, the Dashboard's "Deploy Schema Changes" step has nothing to deploy.</div>
+          <div class="priority-title">CloudKit Dashboard — Deploy Schema to Production</div>
+          <div class="priority-note">icloud.developer.apple.com → container <code>iCloud.com.drivercyber.garden</code> → "Deploy Schema Changes." Required before any TestFlight or App Store build, because production builds connect to Production CloudKit (dev builds connect to Development, which auto-creates schema and is why ⌘R "just works" on Chad's phone today). Button location is unclear in the redesigned Console UI — try Settings in the left sidebar, the per-environment view, or a per-record-type action menu.</div>
         </div>
 
         <div class="priority">
           <div class="badge">2</div>
-          <div class="priority-title">Test on a real device (Path A)</div>
-          <div class="priority-note">Plug an iPhone into the Mac, select it as the run destination, ⌘R. Validates wheat field at 60fps on real hardware, haptic feel, layout on a real screen. Also: confirm One Thing date logic across an actual midnight rollover, and that CloudKit sync actually engages now that the configuration is correct. No App Store account required.</div>
+          <div class="priority-title">Host the privacy policy</div>
+          <div class="priority-note">Public App Store listings require a hosted privacy policy URL. Draft is already written in <code>app-store-listing.md</code>. Easiest paths: GitHub Pages on a Driver-cyber repo, or a published iCloud note. This was deferred when the plan was TestFlight Internal; with the App-Store-first pivot it's load-bearing.</div>
         </div>
 
         <div class="priority">
           <div class="badge">3</div>
-          <div class="priority-title">CloudKit Dashboard — Deploy Schema to Production</div>
-          <div class="priority-note">Apple Developer Program is active (enrolled 2026-04-24). Next: icloud.developer.apple.com → container <code>iCloud.com.drivercyber.garden</code> → "Deploy Schema Changes." Without this, real-device users get silent sync failures. One click, easy to forget.</div>
+          <div class="priority-title">Capture 5 screenshots (6.7" iPhone display)</div>
+          <div class="priority-note">App Store requires the 6.7" set; 6.1" is recommended too. Set of 5 sketched in <code>app-store-listing.md</code>: composer, populated notes list, category chips, Calm screen with checkbox, Calm screen with confetti. Capture from iPhone 16e (Volume Up + Side button) or simulator (Cmd-S in iOS Simulator).</div>
         </div>
 
         <div class="priority">
           <div class="badge">4</div>
-          <div class="priority-title">App Store Connect record + TestFlight upload</div>
-          <div class="priority-note">appstoreconnect.apple.com → My Apps → "+" with bundle ID <code>com.drivercyber.garden</code> (~5 min). Then Xcode → Product → Archive → Distribute → App Store Connect → Upload (~15 min). Build appears in TestFlight tab; add wife as Internal Tester, paste "What to Test" copy, send invite.</div>
+          <div class="priority-title">App Store Connect record + Privacy nutrition label</div>
+          <div class="priority-note">appstoreconnect.apple.com → My Apps → "+" with bundle ID <code>com.drivercyber.garden</code> (~5 min). Paste in description / keywords / subtitle / promo text from <code>app-store-listing.md</code>. Fill in App Privacy as "Data Not Collected" (already drafted). Add the privacy policy URL once hosted.</div>
+        </div>
+
+        <div class="priority">
+          <div class="badge">5</div>
+          <div class="priority-title">Archive + Upload to App Store Connect</div>
+          <div class="priority-note">Xcode → Product → Archive → Distribute App → App Store Connect → Upload (~15 min). Build appears in TestFlight + App Store sections of ASC. Submit for App Review when ready — typical wait 1–3 days for new apps; metadata rejections (privacy URL, screenshots, "doesn't do enough" risk for minimal apps) are part of the rep, not a failure mode.</div>
+        </div>
+
+        <div class="priority">
+          <div class="badge">6</div>
+          <div class="priority-title">1.0 ships → polish notes → 1.1 update → THEN share with friends</div>
+          <div class="priority-note">Chad's reframe (2026-04-26): submit a slightly rough 1.0 for the practice rep, fold any post-launch polish into 1.1, share the link with wife/friends only after 1.1 lands. Friends never see 1.0; they see the polished update on a real public listing.</div>
         </div>
       </div>
 
       <div class="backlog-header">Backlog</div>
       <ul class="backlog">
-        <li>Privacy Policy hosting — paste the draft from app-store-listing.md to GitHub Pages or similar (required for public listing, optional for TestFlight Internal)</li>
-        <li>Screenshots — 6.7" iPhone display required, 6.1" recommended (set of 5 sketched in app-store-listing.md)</li>
+        <li>TestFlight Internal Tester invites — possible path for 1.1 candidate builds before the public update; no longer the primary distribution surface</li>
         <li>First-launch experience — onboarding flow if any, welcoming copy</li>
-        <li>Swipe-to-archive on note rows (replaces the explicit Archive button)</li>
+        <li>Swipe-to-archive on note rows (alternative to the explicit Archive button)</li>
         <li>Hand-designed app icon to replace the programmatic sprig (v2 polish)</li>
-        <li>Code-quality cleanups (deferred from 2026-04-25 review): consolidate UserDefaults keys ("garden.tbd.categoryID", "garden.seeded") into a DefaultsKeys enum; demote @Bindable to let on NoteRowView; consider seeding synchronously to avoid first-launch race</li>
+        <li>Code-quality cleanups (deferred from 2026-04-25 review): consolidate UserDefaults keys into a DefaultsKeys enum; demote @Bindable to let on NoteRowView; consider seeding synchronously to avoid first-launch race</li>
+        <li>Calm screen: re-evaluate wheat shade range / hue variance after Chad lives with it for a session</li>
+        <li>Push origin/main — 5+ commits ahead, deferred</li>
         <li>Quarterly recap (v2) — full spec in CLAUDE.md parking lot</li>
         <li>"One Thing" widget for home screen — parking lot item</li>
       </ul>
 
-      <div class="backlog-header" style="margin-top: 32px;">Shipped today (2026-04-25, code review pass)</div>
+      <div class="backlog-header" style="margin-top: 32px;">Shipped today (2026-04-26, polish + pivot)</div>
       <ul class="backlog">
-        <li>CloudKit fix #1 — ModelConfiguration in gardenApp.swift now passes cloudKitDatabase: .automatic. SwiftData was previously local-only despite the entitlement.</li>
-        <li>CloudKit fix #2 — garden.entitlements now lists iCloud.com.drivercyber.garden as the container identifier (was an empty array).</li>
-        <li>Deleted Item.swift — leftover Xcode template @Model class, never in the Schema, never referenced.</li>
-        <li>Scheduled check-in cron for 2026-04-28 09:57 PDT to ping on TestFlight progress (session-only).</li>
+        <li>Real-device install on Chad's iPhone 16e via Path A — unblocked by lowering deployment target to iOS 17.6 and freeing ~7.4 GB of disk (DerivedData + iOS DeviceSupport) for dyld extraction</li>
+        <li>NoteComposerView — keyboard "Done" toolbar item dismisses focus</li>
+        <li>NotesView + NoteListView — <code>.searchable</code> navigation drawer with case-insensitive substring filtering; <code>.scrollDismissesKeyboard(.interactively)</code></li>
+        <li>NoteRowView — pencil button enters inline edit mode with TextField + Save/Cancel; existing Archive button preserved</li>
+        <li>ExportSheet — archive picker now grouped under monospaced category headers (sorted by sortOrder) instead of one flat list</li>
+        <li>OneThingCard — vertical layout matching original web: serif italic "Breathe.", subtitle "One thing. One breath. One check.", 96pt rounded checkbox (sageDeep when checked), italic serif "Tap when you've done the one thing." footer</li>
+        <li>WheatFieldView — each blade picks one of 5 wheat shades (HSB brightness offsets -0.20 to +0.16) for natural texture variation</li>
+        <li>ConfettiView — easeOut(1.6) replaces snappy spring; piece removal extended from 1.4s → 2.6s for gentler drift</li>
+        <li>CalmView — bottom padding 200 → 160 to fit the taller card</li>
+        <li>Distribution pivot — public App Store first for the practice rep, then 1.1 update before sharing with wife/friends (Decision 17)</li>
+        <li>Two-tab simplicity locked as feedback memory — secondary surfaces go through Settings or menu (Decision 18)</li>
       </ul>
 
-      <div class="backlog-header" style="margin-top: 32px;">Shipped earlier this session (2026-04-25)</div>
+      <div class="backlog-header" style="margin-top: 32px;">Shipped 2026-04-25 (CloudKit fix + listing prep)</div>
+      <ul class="backlog">
+        <li>ModelConfiguration in gardenApp.swift now passes cloudKitDatabase: .automatic</li>
+        <li>garden.entitlements lists iCloud.com.drivercyber.garden as the container identifier</li>
+        <li>Deleted Item.swift template file</li>
+        <li>SettingsView — gear icon on Notes; About card + "Export everything" with archived-toggle, Copy, Share</li>
+        <li>App icon — light + dark + tinted (iOS 18) variants, programmatic generator at /tmp/generate_garden_icons.py</li>
+        <li>app-store-listing.md — full ASC submission copy</li>
+        <li>PrivacyInfo.xcprivacy — declares no tracking, UserDefaults reason CA92.1</li>
+      </ul>
+
+      <div class="backlog-header" style="margin-top: 32px;">Shipped 2026-04-25 (v1 implementation)</div>
       <ul class="backlog">
         <li>Xcode project initialized — fonts, 13 design tokens, SwiftData models, CloudKit container, seed</li>
         <li>NotesView: composer, category chips, list, archive, "Ideas / TBD" filter</li>
@@ -262,10 +293,6 @@
         <li>ExportSheet — markdown preview, Copy + ShareLink, two-step archive picker</li>
         <li>CategoryManagerSheet — add, rename, reorder, delete (reassigns to Ideas / TBD)</li>
         <li>ArchivedNotesSection — collapsible section in Notes list with Restore</li>
-        <li>App icon — light + dark + tinted (iOS 18) variants, all 1024×1024, programmatic generator at /tmp/generate_garden_icons.py</li>
-        <li>PrivacyInfo.xcprivacy — declares no tracking, UserDefaults reason CA92.1</li>
-        <li>SettingsView — gear icon on Notes; About card + "Export everything" with archived-toggle, Copy, Share</li>
-        <li>app-store-listing.md — full ASC submission copy: description, keywords, "What to Test", privacy policy draft, screenshots backlog, post-upload checklist</li>
       </ul>
     </div>
 
@@ -276,58 +303,61 @@
 {
   "project": "garden-app",
   "description": "Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.",
-  "updated": "2026-04-25",
-  "phase": "v1 feature-complete · CloudKit-fixed · Pre-deployment",
+  "updated": "2026-04-26",
+  "phase": "v1 polished · running on iPhone · App-Store-first submission",
   "columns": [
     {
       "name": "Garden",
       "sub": "SwiftUI · SwiftData · CloudKit · iOS 17+",
       "priorities": [
         {
-          "title": "Run once with the CloudKit fix in place",
-          "note": "A 2026-04-25 code review caught two silent CloudKit blockers: ModelConfiguration was missing cloudKitDatabase: .automatic, and the entitlement's container-identifier array was empty. Both fixed. Now run the app once (simulator or device) so SwiftData registers the dev schema with CloudKit — without this, the Dashboard's 'Deploy Schema Changes' step has nothing to deploy."
-        },
-        {
-          "title": "Test on a real device (Path A)",
-          "note": "Plug an iPhone into the Mac, select it as the run destination, ⌘R. Validates wheat field at 60fps on real hardware, haptic feel, layout on a real screen. Also: confirm One Thing date logic across an actual midnight rollover, and that CloudKit sync actually engages now that the configuration is correct. No App Store account required."
-        },
-        {
           "title": "CloudKit Dashboard — Deploy Schema to Production",
-          "note": "Apple Developer Program is active (enrolled 2026-04-24). Next: icloud.developer.apple.com → container iCloud.com.drivercyber.garden → 'Deploy Schema Changes.' Without this, real-device users get silent sync failures. One click, easy to forget."
+          "note": "Required before any TestFlight or App Store build because production builds connect to Production CloudKit. Dev builds auto-connect to Development which is why ⌘R 'just works' today. Button location unclear in the redesigned Console UI — try Settings, the per-environment view, or per-record-type action menus."
         },
         {
-          "title": "App Store Connect record + TestFlight upload",
-          "note": "appstoreconnect.apple.com → My Apps → + with bundle ID com.drivercyber.garden (~5 min). Then Xcode → Product → Archive → Distribute → App Store Connect → Upload (~15 min). Build appears in TestFlight tab; add wife as Internal Tester, paste 'What to Test' copy, send invite."
+          "title": "Host the privacy policy",
+          "note": "Public App Store listings require a hosted privacy policy URL. Draft is in app-store-listing.md. Easiest paths: GitHub Pages on a Driver-cyber repo, or a published iCloud note. Was deferred for TestFlight Internal; load-bearing now."
+        },
+        {
+          "title": "Capture 5 screenshots (6.7\" iPhone display)",
+          "note": "Required: 6.7\" set; 6.1\" recommended too. Set of 5 sketched in app-store-listing.md. Capture from iPhone 16e or simulator."
+        },
+        {
+          "title": "App Store Connect record + Privacy nutrition label",
+          "note": "appstoreconnect.apple.com → My Apps → + with bundle ID com.drivercyber.garden. Paste copy from app-store-listing.md. Privacy as 'Data Not Collected' (drafted). Add privacy policy URL once hosted."
+        },
+        {
+          "title": "Archive + Upload to App Store Connect",
+          "note": "Xcode → Product → Archive → Distribute → App Store Connect → Upload (~15 min). Submit for App Review when ready. Typical wait 1–3 days; metadata rejections are part of the rep."
+        },
+        {
+          "title": "1.0 ships → polish notes → 1.1 update → THEN share with friends",
+          "note": "Chad's reframe (2026-04-26): rough 1.0 for the practice rep, fold polish into 1.1, share with wife/friends after 1.1. Friends never see 1.0."
         }
       ],
       "backlog": [
-        "Privacy Policy hosting — paste the draft from app-store-listing.md to GitHub Pages or similar (required for public listing, optional for TestFlight Internal)",
-        "Screenshots — 6.7\" iPhone display required, 6.1\" recommended (set of 5 sketched in app-store-listing.md)",
+        "TestFlight Internal Tester invites — possible path for 1.1 candidate builds; no longer primary distribution surface",
         "First-launch experience — onboarding flow if any, welcoming copy",
-        "Swipe-to-archive on note rows (replaces the explicit Archive button)",
+        "Swipe-to-archive on note rows (alternative to the explicit Archive button)",
         "Hand-designed app icon to replace the programmatic sprig (v2 polish)",
-        "Code-quality cleanups (deferred from 2026-04-25 review): consolidate UserDefaults keys into a DefaultsKeys enum; demote @Bindable to let on NoteRowView; consider seeding synchronously to avoid first-launch race",
+        "Code-quality cleanups: DefaultsKeys enum, demote @Bindable on NoteRowView, sync-seed pattern",
+        "Calm screen: re-evaluate wheat shade range / hue variance after Chad lives with it for a session",
+        "Push origin/main — 5+ commits ahead, deferred",
         "Quarterly recap (v2) — full spec in CLAUDE.md parking lot",
         "'One Thing' widget for home screen — parking lot item"
       ],
-      "shipped_today_code_review": [
-        "CloudKit fix #1 — ModelConfiguration in gardenApp.swift now passes cloudKitDatabase: .automatic. SwiftData was previously local-only despite the entitlement.",
-        "CloudKit fix #2 — garden.entitlements now lists iCloud.com.drivercyber.garden as the container identifier (was an empty array).",
-        "Deleted Item.swift — leftover Xcode template @Model class, never in the Schema, never referenced.",
-        "Scheduled check-in cron for 2026-04-28 09:57 PDT to ping on TestFlight progress (session-only)."
-      ],
-      "shipped_earlier_session": [
-        "Xcode project initialized — fonts, 13 design tokens, SwiftData models, CloudKit container, seed",
-        "NotesView: composer, category chips, list, archive, Ideas / TBD filter",
-        "CalmView: 80-blade wheat field via TimelineView+Canvas, sky gradient",
-        "OneThingCard with confetti burst, medium+success haptics, midnight reset via @AppStorage",
-        "ExportSheet — markdown preview, Copy + ShareLink, two-step archive picker",
-        "CategoryManagerSheet — add, rename, reorder, delete (reassigns to Ideas / TBD)",
-        "ArchivedNotesSection — collapsible section in Notes list with Restore",
-        "App icon — light + dark + tinted (iOS 18) variants, all 1024x1024, programmatic generator at /tmp/generate_garden_icons.py",
-        "PrivacyInfo.xcprivacy — declares no tracking, UserDefaults reason CA92.1",
-        "SettingsView — gear icon on Notes; About card + 'Export everything' with archived-toggle, Copy, Share",
-        "app-store-listing.md — full ASC submission copy: description, keywords, What to Test, privacy policy draft, screenshots backlog, post-upload checklist"
+      "shipped_today": [
+        "Real-device install on Chad's iPhone 16e via Path A — unblocked by lowering deployment target to iOS 17.6 and freeing ~7.4 GB disk for dyld extraction",
+        "NoteComposerView — keyboard 'Done' toolbar dismisses focus",
+        "NotesView + NoteListView — .searchable navigation drawer with case-insensitive substring; .scrollDismissesKeyboard(.interactively)",
+        "NoteRowView — pencil button enters inline edit mode with TextField + Save/Cancel",
+        "ExportSheet — archive picker grouped under monospaced category headers",
+        "OneThingCard — vertical 'Breathe.' card matching original web layout; 96pt checkbox; italic serif headline + footer",
+        "WheatFieldView — 5-shade brightness palette per blade for texture",
+        "ConfettiView — easeOut(1.6) drift; 2.6s removal",
+        "CalmView — bottom padding 200 → 160",
+        "Distribution pivot — public App Store first for the practice rep, then 1.1 before sharing (Decision 17)",
+        "Two-tab simplicity locked as feedback memory (Decision 18)"
       ]
     }
   ]
