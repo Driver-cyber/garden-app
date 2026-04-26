@@ -18,7 +18,7 @@ struct CalmView: View {
                 Spacer()
                 OneThingCard()
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 200)
+                    .padding(.bottom, 160)
             }
         }
     }

@@ -12,26 +12,47 @@ struct OneThingCard: View {
 
     var body: some View {
         Button(action: tap) {
-            HStack(spacing: 14) {
+            VStack(spacing: 18) {
+                Text("Breathe.")
+                    .font(.custom("InstrumentSerif-Italic", size: 44))
+                    .foregroundStyle(Color.ink)
+
+                Text("One thing. One breath. One check.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.ink2)
+
                 ZStack {
-                    Image(systemName: isCheckedToday ? "checkmark.square.fill" : "square")
-                        .font(.system(size: 28, weight: .regular))
-                        .foregroundStyle(isCheckedToday ? Color.sageDeep : Color.ink3)
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(isCheckedToday ? Color.sageDeep : Color.bg)
+                        .frame(width: 96, height: 96)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(Color.line, lineWidth: 1.5)
+                        )
+
+                    if isCheckedToday {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 48, weight: .medium))
+                            .foregroundStyle(Color.paper)
+                    }
+
                     ConfettiView(trigger: confettiTrigger)
                 }
-                Text("I did the one thing today")
-                    .font(.custom("InstrumentSerif-Italic", size: 22))
-                    .foregroundStyle(Color.ink)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 4)
+
+                Text("Tap when you've done the one thing.")
+                    .font(.custom("InstrumentSerif-Italic", size: 17))
+                    .foregroundStyle(Color.ink3)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 18)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 28)
             .background(Color.paper)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 24)
                     .stroke(Color.line, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
         }
         .buttonStyle(.plain)
     }

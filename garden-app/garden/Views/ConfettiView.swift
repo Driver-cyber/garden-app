@@ -18,7 +18,7 @@ struct ConfettiView: View {
         let new = (0..<26).map { _ in Piece.random() }
         pieces.append(contentsOf: new)
         let ids = Set(new.map(\.id))
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.6) {
             pieces.removeAll { ids.contains($0.id) }
         }
     }
@@ -59,7 +59,7 @@ private struct ConfettiPiece: View {
             .offset(animated ? piece.targetOffset : .zero)
             .opacity(animated ? 0 : 1)
             .onAppear {
-                withAnimation(.spring(response: 0.7, dampingFraction: 0.55)) {
+                withAnimation(.easeOut(duration: 1.6)) {
                     animated = true
                 }
             }
