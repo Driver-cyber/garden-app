@@ -6,6 +6,7 @@ struct NoteComposerView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var draft: String = ""
     @State private var draftCategoryID: UUID?
+    @FocusState private var isComposerFocused: Bool
 
     private var resolvedCategoryID: UUID? {
         draftCategoryID ?? defaultTBDID() ?? categories.first?.id
@@ -39,6 +40,7 @@ struct NoteComposerView: View {
 
             TextField("New note…", text: $draft, axis: .vertical)
                 .lineLimit(1...4)
+                .focused($isComposerFocused)
                 .padding(12)
                 .background(Color.paper)
                 .overlay(
@@ -46,6 +48,13 @@ struct NoteComposerView: View {
                         .stroke(Color.line, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") { isComposerFocused = false }
+                            .foregroundStyle(Color.sageDeep)
+                    }
+                }
 
             HStack {
                 Spacer()
@@ -70,6 +79,7 @@ struct NoteComposerView: View {
             modelContext.insert(Note(categoryID: cid, text: trimmed))
             draft = ""
         }
+        isComposerFocused = false
     }
 
     private func defaultTBDID() -> UUID? {

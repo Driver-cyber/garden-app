@@ -7,6 +7,7 @@ struct NotesView: View {
     @State private var showExport: Bool = false
     @State private var showCategoryManager: Bool = false
     @State private var showSettings: Bool = false
+    @State private var searchQuery: String = ""
 
     var body: some View {
         NavigationStack {
@@ -19,7 +20,7 @@ struct NotesView: View {
                         selectedID: $selectedCategoryID,
                         onManage: { showCategoryManager = true }
                     )
-                    NoteListView(selectedCategoryID: selectedCategoryID)
+                    NoteListView(selectedCategoryID: selectedCategoryID, searchQuery: searchQuery)
                 }
             }
             .toolbar {
@@ -49,6 +50,7 @@ struct NotesView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
+            .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search notes")
         }
     }
 }
