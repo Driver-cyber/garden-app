@@ -144,5 +144,25 @@
       "Xcode 16's PBXFileSystemSynchronizedRootGroup auto-syncs folder deletions just like additions — `rm` the file from disk and the next build excludes it from the bundle, no project-file edit needed."
     ],
     "next_session_starting_point": "Build 5 was submitted at session end; Apple's email lands within 30–60 minutes if it's a rejection or stays silent for 1–3 days if processing succeeds. Open Mail / ASC → Activity → Build 5 first thing. If green: attach build 5 to v1.0, the existing 'Waiting for Review' submission re-validates, and we wait on actual App Review. If red with another ITMS-91056: open an Apple Developer Support ticket — we've now executed the full fallback ladder. Independent of build status, finish the CloudKit verification: Schema → Indexes → + → CD_Note, recordName, Queryable; then Records → CD_Note query in Private Database to confirm notes are in iCloud before the dev-build → App Store install transition. Submission-run config diffs (pbxproj iPad drop, Info.plist encryption exemption, DECISIONS.md updates, deleted PrivacyInfo.xcprivacy) are still uncommitted — bundle them with the build-5 build-number bump in one '1.0 submission run' commit when the dust settles."
+  },
+  {
+    "date": "2026-04-28",
+    "session": "1.0 approved",
+    "summary": "Build 5 (manifest-deleted, Plan B) was accepted by Apple's validator and approved by App Review ~23 hours after submission. Garden is live at https://apps.apple.com/app/garden-notes-calm/id6763959626 under the name 'Garden – Notes & Calm'. The submission-ergonomics fight is over.",
+    "completed": [
+      "1.0 submission run committed (ef416a8) — iPad dropped from TARGETED_DEVICE_FAMILY, ITSAppUsesNonExemptEncryption=false in Info.plist, PrivacyInfo.xcprivacy deleted, build number bumped to 5",
+      "Build 5 archived and uploaded; Apple validator passed (first acceptance after 3 prior ITMS-91056 rejections on builds 2–4)",
+      "App Review approved overnight; approval email timestamped 2026-04-28 04:53 AM PT, submission timestamped 2026-04-27 06:03 AM PT (~23h end-to-end)",
+      "App live at https://apps.apple.com/app/garden-notes-calm/id6763959626"
+    ],
+    "decisions": [
+      "Plan B (manifest deletion) is the confirmed answer for ITMS-91056 when an app has no required-reason API usage — promoted from 'tried' to 'works'.",
+      "App name on the listing is 'Garden – Notes & Calm', the longer alternate from app-store-listing.md. 'Garden' alone was presumably unavailable at submission time."
+    ],
+    "gotchas": [
+      "Once the validator finally accepts a build, App Review itself is fast — ~23 hours for a first submission with a clean validator pass. The multi-day pain was entirely the pre-review validator, not the human review queue.",
+      "App Store Connect's 'Waiting for Review' submission auto-re-validates against any new build attached to the same version; you don't need to re-submit the metadata, just upload a new build and ASC picks it up."
+    ],
+    "next_session_starting_point": "1.0 is live. Two open threads: (1) 1.1 polish — collect anything that surfaced post-launch and ship before sending the link to wife/friends (per Decision 17). (2) CloudKit verification still deferred from 2026-04-27 — Schema → Indexes → + CD_Note recordName Queryable, then query Private Database to confirm notes are syncing in production. Independent of 1.1 since the dev → prod schema deploy needs to happen before any 1.1 submission anyway."
   }
 ]

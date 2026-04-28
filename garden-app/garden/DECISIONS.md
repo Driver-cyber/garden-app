@@ -6,11 +6,11 @@
 
 ## 🎯 Current Phase
 
-**Phase:** 1.0 submitted to App Review; build 5 uploaded with `PrivacyInfo.xcprivacy` deleted entirely (Plan B from the fallback ladder); awaiting Apple validator response.
+**Phase:** 1.0 LIVE on the App Store as of 2026-04-28. Build 5 (manifest deleted, Plan B) was accepted by the validator and approved overnight (~23 hours from submit to approval). App listed as **"Garden – Notes & Calm"** at https://apps.apple.com/app/garden-notes-calm/id6763959626.
 
-**What's next:** Wait on Apple's email for build 5. Builds 2, 3, and 4 were all rejected with the same `ITMS-91056: Invalid privacy manifest` despite three different manifest configurations (originally with UserDefaults declared at reason `CA92.1`, then with `NSPrivacyTrackingDomains` removed, then with `NSPrivacyAccessedAPITypes` emptied). Three rejections of textbook-minimal content meant the validator was either rejecting the file's *existence* or comparing against cached state — both addressable by deletion. If build 5 is also rejected with ITMS-91056, the next escalation is Apple Developer Support — we have a clean reproduction at that point (manifest doesn't even exist in the bundle). Once a build validates, the existing "Waiting for Review" submission re-validates against it automatically and moves into the actual review queue.
+**What's next:** 1.1 polish pass before sharing the link with wife/friends (per Decision 17). Independent of that, finish the deferred CloudKit verification (Schema → Indexes → +CD_Note recordName Queryable, then query Private Database).
 
-**Vibe:** Submission ergonomics are *still* the work, but we've executed the full fallback ladder and have nothing left between us and Apple's intent. Chad pushed `garden-app-tracker.html` to main (`540e3df`) for the project-dashboard, started CloudKit verification (icloud.developer.apple.com → container → query CD_Note), and immediately hit a CloudKit Console gotcha (recordName not queryable by default — even when predicating on other fields, CloudKit's query mechanism uses recordName internally for pagination). Verification deferred until next session adds the queryable index. Submission-run code/config diffs are still uncommitted, queued for one bundled "1.0 submission run" commit at session end.
+**Vibe:** The submission ergonomics fight is over. The fallback ladder worked: Plan B (delete the manifest entirely) was the right move — three identical rejections of three valid manifests really did mean the validator was choking on the file's existence with empty arrays. Lesson encoded for next time.
 
 ---
 
@@ -31,6 +31,17 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 ---
 
 ## 📝 Decision Log
+
+### 2026-04-28 — 1.0 approved, Plan B confirmed
+
+**Session summary:** Apple's approval email landed at 4:53 AM PT, ~23 hours after submitting build 5 on 2026-04-27 at 06:03 AM PT. Build 5 was the manifest-deleted build (Plan B from the fallback ladder). The submission moved straight from validator-accepted into the actual App Review queue and through to approval without re-rejection. Garden is live at https://apps.apple.com/app/garden-notes-calm/id6763959626 under the name "Garden – Notes & Calm" (the longer alternate from app-store-listing.md, presumably because "Garden" alone was unavailable at submission time).
+
+**Decision 26: Plan B (delete the manifest) is the encoded answer for ITMS-91056 with empty-array manifests.**
+Promoted from "the resolution we tried" (Decision 24) to "the resolution that worked." For an app with no required-reason API usage, Apple's validator does in fact reject the *existence* of a `PrivacyInfo.xcprivacy` declaring nothing more reliably than it accepts one. Future Driver-cyber projects in the same shape (no required-reason APIs, nothing to disclose) should not ship a manifest at all. If a future build does need to declare something, add the manifest then — not preemptively.
+
+**Sections of CLAUDE.md updated:** §Xcode Project Setup Checklist should drop any "create PrivacyInfo.xcprivacy" line item if one ever existed there (it doesn't currently — Decision 9 created the file but the checklist was never amended to include it). No edits required.
+
+---
 
 ### 2026-04-27 — manifest deleted (Plan B), build 5 in flight, CloudKit verification mid-step
 
@@ -200,7 +211,7 @@ These mirror the Future Ideas section in `CLAUDE.md`. Reproduced here because pa
 Captured here so future sessions don't re-discover them.
 
 - **CloudKit Console queries require `recordName` to be a Queryable index** — even when predicating on other fields. SwiftData-generated record types (`CD_Note`, etc.) ship with no `recordName` index by default, so any query in the Records panel returns "Field 'recordName' is not marked queryable." Fix: Schema → Indexes → `+` → record type `CD_Note`, field `recordName`, type `QUERYABLE`. One-time per record type per environment.
-- **App Store auto-validator can reject the *existence* of a privacy manifest, not just its contents** — three identical `ITMS-91056` rejections of three different syntactically-valid minimal manifests pointed to either empty-array intolerance or cached-state comparison; deletion was the resolution. Don't assume an ITMS-91056 means the file's contents are wrong.
+- **App Store auto-validator can reject the *existence* of a privacy manifest, not just its contents** — three identical `ITMS-91056` rejections of three different syntactically-valid minimal manifests pointed to either empty-array intolerance or cached-state comparison; deletion was the resolution. **Confirmed by build 5: manifest deleted → validator passed → app approved 2026-04-28.** Don't assume an ITMS-91056 means the file's contents are wrong.
 
 ---
 
