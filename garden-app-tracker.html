@@ -3,17 +3,31 @@
 <head><meta charset="UTF-8"><title>garden-app tracker</title></head>
 <body>
 <h1>garden-app</h1>
-<p>Last updated: 2026-04-27</p>
+<p>Last updated: 2026-04-28</p>
 <script id="tracker-data" type="application/json">
 {
   "project": "garden-app",
-  "updated": "2026-04-27",
   "description": "Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.",
-  "priorities": [
-    "Wait on Apple validator for build 5 (PrivacyInfo.xcprivacy deleted as Plan B); if rejected with ITMS-91056 again, escalate to Apple Developer Support",
-    "Verify CloudKit safety net before App Store install — add CD_Note recordName Queryable index, then query CD_Note in Private Database",
-    "TestFlight Internal self-test once build validates",
-    "Ship 1.1 with post-launch polish, then share with wife and friends"
+  "updated": "2026-04-28",
+  "columns": [
+    {
+      "name": "garden-app",
+      "sub": "SwiftUI · SwiftData · CloudKit",
+      "priorities": [
+        { "title": "1.0 LIVE on the App Store", "note": "Build 5 approved 2026-04-28 after Plan B (manifest deletion). Listed as 'Garden – Notes & Calm' at apps.apple.com/app/garden-notes-calm/id6763959626." },
+        { "title": "1.1 polish pass", "note": "Collect post-launch notes from personal usage; rewrite description; ship update before sharing the link with wife/friends." },
+        { "title": "Verify CloudKit in production", "note": "Schema → Indexes → + CD_Note recordName Queryable; then query Private Database to confirm sync. Required before 1.1 submission." }
+      ],
+      "backlog": [
+        "Share link with wife and friends after 1.1 lands",
+        "CloudKit Console: deploy schema to production",
+        "Hand-designed app icon — replace programmatic sage sprig",
+        "One Thing home-screen widget",
+        "Quarterly Recap (v2) — word-cloud reflection card on Notes tab",
+        "Calm screen seasonal variations (rain, snow, night sky)",
+        "Shortcut / Siri integration — 'Hey Siri, add to Garden'"
+      ]
+    }
   ]
 }
 </script>
