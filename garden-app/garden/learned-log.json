@@ -164,5 +164,29 @@
       "App Store Connect's 'Waiting for Review' submission auto-re-validates against any new build attached to the same version; you don't need to re-submit the metadata, just upload a new build and ASC picks it up."
     ],
     "next_session_starting_point": "1.0 is live. Two open threads: (1) 1.1 polish — collect anything that surfaced post-launch and ship before sending the link to wife/friends (per Decision 17). (2) CloudKit verification still deferred from 2026-04-27 — Schema → Indexes → + CD_Note recordName Queryable, then query Private Database to confirm notes are syncing in production. Independent of 1.1 since the dev → prod schema deploy needs to happen before any 1.1 submission anyway."
+  },
+  {
+    "date": "2026-04-28",
+    "session": "session-end close-out (afternoon)",
+    "summary": "Doc close-out for 1.0 approval committed (b570a88), tracker JSON reshaped to the project-dashboard's expected schema and committed direct to main (f91e0c9), feature branch tracker pre-aligned to avoid merge conflict (f6900c0), feature branch merged into main as aa7dae2. App Store post-launch update workflow walked through as background for the upcoming description rewrite + 1.1 polish.",
+    "completed": [
+      "DECISIONS.md / learned-log.json / garden-app-tracker.html updated for 1.0 LIVE state (commit b570a88)",
+      "ITMS-91056 gotcha hardened with build-5 confirmation; Decision 26 promoting Plan B from 'tried' to 'works' added to DECISIONS.md",
+      "garden-app-tracker.html reshaped to the dashboard's columns/priorities/backlog schema (commit f91e0c9 on main)",
+      "Feature branch's tracker file pre-aligned to main's schema to avoid merge conflict (commit f6900c0)",
+      "Feature branch claude/review-app-store-session-NJ1N1 merged into main as aa7dae2 — DECISIONS.md and learned-log.json close-out is now on main",
+      "Decision 27 added to DECISIONS.md encoding the tracker JSON schema; CLAUDE.md §What This Repo Contains updated with a pointer to it"
+    ],
+    "decisions": [
+      "garden-app-tracker.html uses columns[].priorities[].{title, note} + backlog[] schema (Decision 27). Future §Session-End Protocol just edits the priorities/backlog content, not the structure.",
+      "Doc-only commits and dashboard fixes can go direct-to-main; the feature-branch + merge dance is reserved for code changes that warrant review surface."
+    ],
+    "gotchas": [
+      "When a project-dashboard tracker fetches but renders incomplete, the JSON shape is the first thing to check — the card renderer is strict and silently degrades to description-only if columns/priorities/backlog are missing.",
+      "git checkout main on a stale local branch can show DECISIONS.md (or any file) as 'modified' in system reminders even though nothing was edited — it's just the branch difference. Don't revert; fast-forward instead.",
+      "ASC fields split into three categories: editable-anytime (Promotional Text 170 chars, pricing, availability), per-version-with-review (description, keywords, subtitle, screenshots, What's New), and per-build (binary code, MARKETING_VERSION, CURRENT_PROJECT_VERSION). Promotional Text is the freshness lever between formal updates.",
+      "Subsequent App Reviews are typically faster than the first — 4–12 hours is common once the validator state is settled and reviewers focus on what changed. Apple's published median is ~24h for 50% of submissions, ~48h for 90%."
+    ],
+    "next_session_starting_point": "1.0 is live and stable. Two threads still open: (1) 1.1 polish — Chad will collect post-launch notes from his own usage, draft a new description paragraph, and bundle them into the next submission. The Promotional Text field can be edited in ASC anytime without review for fresh launch copy. (2) CloudKit verification still deferred — Schema → Indexes → + CD_Note recordName Queryable, then query Private Database to confirm sync in production. Required before any 1.1 submission. Tracker schema is now correct on main; no further dashboard fixes anticipated."
   }
 ]

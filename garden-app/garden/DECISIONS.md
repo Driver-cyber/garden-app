@@ -32,6 +32,35 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 
 ## 📝 Decision Log
 
+### 2026-04-28 (afternoon) — session-end: tracker schema, doc merge to main, App Store update workflow captured
+
+**Session summary:** Picked up after the morning approval email and ran the full doc close-out plus a couple of follow-on tasks. (1) Five-edit close-out across DECISIONS.md / learned-log.json / garden-app-tracker.html capturing 1.0 approval, Decision 26 promoting Plan B from "tried" to "works," and hardening the ITMS-91056 gotcha (committed as `b570a88` on the feature branch). (2) Tracker JSON reshaped from a flat `priorities` array of strings to the project-dashboard's expected `columns[].priorities[].{title, note}` + `backlog[]` shape — the dashboard had been silently rendering only the description because the old shape didn't match the card renderer (committed as `f91e0c9` direct to main). (3) Pre-resolved the tracker conflict on the feature branch (`f6900c0`), then merged the feature branch into main as `aa7dae2`. (4) Walked through the App Store post-launch update workflow as background for the upcoming description rewrite + 1.1 polish pass; key takeaways captured in the gotchas of today's `learned-log.json` entry.
+
+**Decision 27: `garden-app-tracker.html` schema is `columns[]` with `priorities[].{title, note}` + `backlog[]` plain strings.**
+The project-dashboard at garden.chadstewartcpa.com fetches this file via the GitHub Contents API and renders a card from the embedded `<script id="tracker-data">` JSON. The flat `priorities` array of strings used in the original tracker file (Decision 25) didn't match the dashboard's card renderer — only the description paragraph rendered. Correct schema:
+
+```
+{
+  "project": "garden-app",
+  "description": "...",
+  "updated": "YYYY-MM-DD",
+  "columns": [
+    {
+      "name": "garden-app",
+      "sub": "SwiftUI · SwiftData · CloudKit",
+      "priorities": [{ "title": "...", "note": "..." }],   // max 3 shown on card
+      "backlog": ["...", "..."]                              // plain strings, expand section
+    }
+  ]
+}
+```
+
+`columns` is an array so the project can split into multiple lanes later (e.g. iOS vs. backend) without a schema change. Future §Session-End Protocol updates this file's `priorities`, `backlog`, and `updated` date — the schema itself shouldn't need to change.
+
+**Sections of CLAUDE.md updated:** §What This Repo Contains gains a one-line schema pointer at this decision so future sessions don't recreate the bug.
+
+---
+
 ### 2026-04-28 — 1.0 approved, Plan B confirmed
 
 **Session summary:** Apple's approval email landed at 4:53 AM PT, ~23 hours after submitting build 5 on 2026-04-27 at 06:03 AM PT. Build 5 was the manifest-deleted build (Plan B from the fallback ladder). The submission moved straight from validator-accepted into the actual App Review queue and through to approval without re-rejection. Garden is live at https://apps.apple.com/app/garden-notes-calm/id6763959626 under the name "Garden – Notes & Calm" (the longer alternate from app-store-listing.md, presumably because "Garden" alone was unavailable at submission time).
