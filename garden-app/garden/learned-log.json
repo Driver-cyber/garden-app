@@ -188,5 +188,25 @@
       "Subsequent App Reviews are typically faster than the first — 4–12 hours is common once the validator state is settled and reviewers focus on what changed. Apple's published median is ~24h for 50% of submissions, ~48h for 90%."
     ],
     "next_session_starting_point": "1.0 is live and stable. Two threads still open: (1) 1.1 polish — Chad will collect post-launch notes from his own usage, draft a new description paragraph, and bundle them into the next submission. The Promotional Text field can be edited in ASC anytime without review for fresh launch copy. (2) CloudKit verification still deferred — Schema → Indexes → + CD_Note recordName Queryable, then query Private Database to confirm sync in production. Required before any 1.1 submission. Tracker schema is now correct on main; no further dashboard fixes anticipated."
+  },
+  {
+    "date": "2026-04-28",
+    "session": "tracker shipped[] enrichment + Xcode Cloud awareness (evening)",
+    "summary": "Short follow-on. Enriched the project-dashboard tracker with a 14-entry shipped[] array reconstructed from git log so the dashboard's Galaxy tab can render dates and tags. Surfaced from a build-success email that Xcode Cloud is actively building on every main push — even doc-only commits trigger an Archive – iOS run.",
+    "completed": [
+      "garden-app-tracker.html — added shipped[] inside columns[0]: 14 objects {date, what, tags[], learned?} sorted newest-first (2026-04-28 → 2026-04-25), JSON validated, committed direct-to-main as 0d2ed39",
+      "DECISIONS.md — Decision 28 encoded as the shipped[] schema extension to Decision 27; added Xcode Cloud auto-build gotcha to §Known Operational Gotchas",
+      "CLAUDE.md §What This Repo Contains — tracker line extended to mention the shipped[] schema and Decision 28 alongside Decision 27"
+    ],
+    "decisions": [
+      "Tracker shipped[] items use {date, what, tags[], learned?} object shape, sorted newest-first; dates from git log when reconstructing history, omit-rather-than-guess for unknowns; tags come from the shared cross-project dashboard vocab where possible.",
+      "Future §Session-End Protocol appends the day's wins to shipped[] in object form (with date + tags) — don't rewrite older entries when their dates were best-guess."
+    ],
+    "gotchas": [
+      "Xcode Cloud auto-builds on every push to main — even doc-only commits trigger Archive – iOS. The build-success email subject is 'garden -- Build N succeeded (main)'. To skip a build, push to a non-main branch. To stop builds entirely, edit the workflow trigger in App Store Connect → Xcode Cloud.",
+      "An Xcode Cloud success email reading 'Results: Archive - iOS' tells you the build compiled and archived but doesn't tell you whether it shipped to TestFlight. TestFlight delivery requires a 'TestFlight (Internal Testing)' post-action on the workflow; absent that, the archive sits in Xcode Cloud and goes nowhere. To verify: open TestFlight on the iPhone after a push and see if the build appears within ~10–20 min.",
+      "Reconstructing a shipped[] array from git log: `git log --format='%cs %h %s' main` is the cleanest source; group multiple commits on the same day into one shipped item when they form a coherent slice (e.g. a single polish pass)."
+    ],
+    "next_session_starting_point": "1.0 is live; tracker now has full priorities/backlog/shipped data for the dashboard's Galaxy tab. Open threads unchanged from the afternoon entry: (1) 1.1 polish + description rewrite for the next submission, and (2) CloudKit verification (CD_Note recordName Queryable index) before that submission. Optional infra task: at the next Mac session, check whether the Xcode Cloud Default workflow has a TestFlight post-action attached — if yes, doc-only commits will continue producing TestFlight builds (waste of build numbers); if no, attach one and we have a real remote-iteration loop. Either way, prefer pushing tracker/doc-only changes to a side branch when at the Mac to keep main's build numbers tied to actual code changes."
   }
 ]

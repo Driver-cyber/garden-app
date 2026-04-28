@@ -32,6 +32,23 @@ Locked by `CLAUDE.md`. Reproduced here for quick reference:
 
 ## 📝 Decision Log
 
+### 2026-04-28 (evening) — tracker shipped[] enrichment + Xcode Cloud awareness
+
+**Session summary:** Short follow-on after the afternoon close-out. Two threads. (1) Enriched the project-dashboard tracker with a `shipped[]` array — 14 entries reconstructed from `git log` (oldest: initial commit 2026-04-25; newest: today's 1.0 approval + tracker reshape), each with date, one-sentence `what`, 1–4 tags from the shared dashboard vocab (`ios`, `swiftui`, `ux`, `sync`, `founding`, `app-store`, etc.), and `learned` lines on the three entries with a real lesson. Sorted newest-first; JSON validated; committed direct-to-main as `0d2ed39`. (2) Surfaced from a build-success email that Xcode Cloud is actively building on every main push — Build 9 was triggered by my afternoon `c719587` close-out push. The Default workflow currently runs Archive – iOS; whether it auto-delivers to TestFlight depends on a post-action that I can't inspect from here.
+
+**Decision 28: Tracker `shipped[]` schema is `[{ date, what, tags[], learned? }]`, sorted newest-first.**
+Extends Decision 27. The project-dashboard's Galaxy tab renders rich shipped data; a flat string array hides dates and tags from that view. Object shape:
+- `date`: `YYYY-MM-DD`, the day the work landed (best-effort from `git log --format=%cs`); omit rather than guess if truly unknown.
+- `what`: one sentence describing what shipped.
+- `tags`: 1–4 short lowercase strings from the shared cross-project vocab (`swift`, `swiftui`, `ios`, `css`, `ux`, `animation`, `sync`, `github-api`, `cloudflare`, `python`, `stdlib`, `founding`, `branding`, `favicon`, `docs`, `architecture`, `defensive-coding`, `mobile`, `tabs`, `notepad`, `widgetkit`, `wkwebview`, `app-store`); add project-specific tags only when nothing in the shared set fits.
+- `learned`: optional one-sentence lesson — only when there's a real one. Most entries omit it.
+
+Future §Session-End Protocol updates `shipped[]` by appending the day's wins (object form, with date and tags) and rebumping `updated`. Don't go back and rewrite history; older entries can stay as-is when their dates are best-guess.
+
+**Sections of CLAUDE.md updated:** §What This Repo Contains tracker line extended to mention the `shipped[]` extension and Decision 28 alongside Decision 27.
+
+---
+
 ### 2026-04-28 (afternoon) — session-end: tracker schema, doc merge to main, App Store update workflow captured
 
 **Session summary:** Picked up after the morning approval email and ran the full doc close-out plus a couple of follow-on tasks. (1) Five-edit close-out across DECISIONS.md / learned-log.json / garden-app-tracker.html capturing 1.0 approval, Decision 26 promoting Plan B from "tried" to "works," and hardening the ITMS-91056 gotcha (committed as `b570a88` on the feature branch). (2) Tracker JSON reshaped from a flat `priorities` array of strings to the project-dashboard's expected `columns[].priorities[].{title, note}` + `backlog[]` shape — the dashboard had been silently rendering only the description because the old shape didn't match the card renderer (committed as `f91e0c9` direct to main). (3) Pre-resolved the tracker conflict on the feature branch (`f6900c0`), then merged the feature branch into main as `aa7dae2`. (4) Walked through the App Store post-launch update workflow as background for the upcoming description rewrite + 1.1 polish pass; key takeaways captured in the gotchas of today's `learned-log.json` entry.
@@ -241,6 +258,7 @@ Captured here so future sessions don't re-discover them.
 
 - **CloudKit Console queries require `recordName` to be a Queryable index** — even when predicating on other fields. SwiftData-generated record types (`CD_Note`, etc.) ship with no `recordName` index by default, so any query in the Records panel returns "Field 'recordName' is not marked queryable." Fix: Schema → Indexes → `+` → record type `CD_Note`, field `recordName`, type `QUERYABLE`. One-time per record type per environment.
 - **App Store auto-validator can reject the *existence* of a privacy manifest, not just its contents** — three identical `ITMS-91056` rejections of three different syntactically-valid minimal manifests pointed to either empty-array intolerance or cached-state comparison; deletion was the resolution. **Confirmed by build 5: manifest deleted → validator passed → app approved 2026-04-28.** Don't assume an ITMS-91056 means the file's contents are wrong.
+- **Xcode Cloud auto-builds on every push to `main`** — confirmed 2026-04-28 when a routine doc-only push triggered Build 9 (email subject: "garden -- Build 9 succeeded (main)"). Even pure documentation/tracker commits cause an Archive – iOS run. Whether the workflow then delivers to TestFlight depends on a post-action attached in App Store Connect → Xcode Cloud → workflow → Post-Actions; the email's "Results: Archive - iOS" alone doesn't tell you. To check post-launch: open TestFlight on the iPhone after a push and see if the build appears within ~10–20 min. To skip a build, push to a non-main branch.
 
 ---
 

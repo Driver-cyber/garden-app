@@ -81,7 +81,7 @@ A plain markdown file the user owns outright. Triggered two ways: (a) the quarte
 | `GardenApp/Views/` | SwiftUI views, organized by screen |
 | `GardenApp/Design/` | Color palette, typography helpers |
 | `GardenApp.xcodeproj/` | Xcode project file — do not hand-edit |
-| `garden-app-tracker.html` | Build tracker — embedded `<script id="tracker-data">` JSON consumed by the project-dashboard at garden.chadstewartcpa.com. Schema: `columns[].priorities[].{title, note}` + `backlog[]` plain strings (see `DECISIONS.md` Decision 27). |
+| `garden-app-tracker.html` | Build tracker — embedded `<script id="tracker-data">` JSON consumed by the project-dashboard at garden.chadstewartcpa.com. Schema: `columns[].priorities[].{title, note}` + `backlog[]` plain strings + `shipped[].{date, what, tags[], learned?}` for the Galaxy view (see `DECISIONS.md` Decisions 27–28). |
 | `learned-log.json` | Append-only learning log — **development artifact** tracking what was built each session, not a user-facing feature |
 | `CLAUDE.md` | This file |
 | `DECISIONS.md` | Living decision log |
