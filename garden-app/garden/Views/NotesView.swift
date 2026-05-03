@@ -22,6 +22,7 @@ struct NotesView: View {
                     NoteListView(selectedCategoryID: selectedCategoryID, searchQuery: searchQuery)
                     NoteComposerView(
                         categories: categories,
+                        filterCategoryID: selectedCategoryID,
                         onManageCategories: { showCategoryManager = true }
                     )
                 }

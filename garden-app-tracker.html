@@ -3,31 +3,34 @@
 <head><meta charset="UTF-8"><title>garden-app tracker</title></head>
 <body>
 <h1>garden-app</h1>
-<p>Last updated: 2026-04-28</p>
+<p>Last updated: 2026-05-03</p>
 <script id="tracker-data" type="application/json">
 {
   "project": "garden-app",
   "description": "Native iOS app for presence and clarity — quick-capture notes, the one thing, and a wheat field you can return to.",
-  "updated": "2026-04-28",
+  "updated": "2026-05-03",
   "columns": [
     {
       "name": "garden-app",
-      "sub": "SwiftUI · SwiftData · CloudKit",
+      "sub": "SwiftUI · SwiftData · CloudKit · Widgets · App Intents",
       "priorities": [
-        { "title": "1.0 LIVE on the App Store", "note": "Build 5 approved 2026-04-28 after Plan B (manifest deletion). Listed as 'Garden – Notes & Calm' at apps.apple.com/app/garden-notes-calm/id6763959626." },
-        { "title": "1.1 polish pass", "note": "Collect post-launch notes from personal usage; rewrite description; ship update before sharing the link with wife/friends." },
-        { "title": "Verify CloudKit in production", "note": "Schema → Indexes → + CD_Note recordName Queryable; then query Private Database to confirm sync. Required before 1.1 submission." }
+        { "title": "v2 device verification", "note": "Chad currently testing on device: widget Compose tap → Garden Inbox Shortcut speak/type → silent save, lock screen accessories, Calm breath animation, painterly wheat field, ViewThatFits chip overflow with pinned Inbox, dedup pass merging CloudKit-restored category duplicates. Post-test fixes feed straight into priority 3." },
+        { "title": "CloudKit production schema deploy", "note": "Long-deferred gate, now blocking v2 submission. CloudKit Console → Schema → Indexes → +CD_Note recordName Queryable → Deploy Schema to Production. ~5 min in console, no code change." },
+        { "title": "v2 App Store submission", "note": "Bundles widget + dashboard, lock screen accessories, Action Button quick capture (Garden Inbox Shortcut + iCloud installer), Inbox category, breath animation, dedup pass, painterly wheat. Needs description rewrite emphasizing widget + lock screen + Action Button capture before submission. Depends on (1) and (2)." }
       ],
       "backlog": [
-        "Share link with wife and friends after 1.1 lands",
-        "CloudKit Console: deploy schema to production",
+        "Share link with wife and friends after v2 lands on the App Store",
         "Hand-designed app icon — replace programmatic sage sprig",
-        "One Thing home-screen widget",
         "Quarterly Recap (v2) — word-cloud reflection card on Notes tab",
         "Calm screen seasonal variations (rain, snow, night sky)",
-        "Shortcut / Siri integration — 'Hey Siri, add to Garden'"
+        "Per-category pinning UI in Manage Categories — currently only Inbox auto-pins the compact chip strip",
+        "Revisit silent widget Button(intent:) capture — current flow routes via Shortcuts.app interstitial; would need a different scheme to fire parameter prompts in-process",
+        "Trim CLAUDE.md §Session-End Protocol to link to chad-wiki instead of inlining the body (cleanup carryover)"
       ],
       "shipped": [
+        { "date": "2026-05-03", "what": "v2 widget extension shipped: home screen dashboard widget (medium) with Compose + Calm buttons and a live Inbox count chip, lock screen circular accessory and rectangular Inbox count accessory, App Group SwiftData store with one-time migration from the default location (including -wal/-shm sidecars), shared UserDefaults (group.com.drivercyber.garden) for cross-process inbox category ID, CloudKit capability on the widget extension target, garden:// URL scheme + ContentView deep-link handler for calm/notes/compose, dedup pass merging CloudKit-restored duplicate categories on launch + every foreground.", "tags": ["ios", "swiftui", "widgets", "app-intents", "sync"], "learned": "Button(intent:) in widgets and lock-screen accessories runs intents silently in a non-conversational background — requestValueDialog never fires there even with openAppWhenRun:true. The fix is Link(destination: URL(\"shortcuts://run-shortcut?name=...\")) so Shortcuts.app hosts the parameter prompt. Silent intent writes from a widget/extension process require BOTH App Group capability AND a matching CloudKit capability on the extension target." },
+        { "date": "2026-05-03", "what": "Garden Inbox Shortcut + Settings installer card: AddToGardenInboxIntent registered via AppShortcutsProvider with Siri phrases, Garden Inbox user Shortcut (Choose-from-Menu Speak/Type → Dictate Text or Ask for Input → Add to Garden Inbox) published as an iCloud share link, new Settings card with one-tap install button + Action Button setup tip.", "tags": ["app-intents", "ux", "ios"], "learned": "AppShortcutsProvider auto-registers an App Shortcut as an action (in Spotlight/Siri/Shortcuts action picker) but does not auto-create a user Shortcut card in the Library. Polished multi-step UX (Choose from Menu, Dictate Text, etc.) ships as an iCloud share link the app deep-links to install." },
+        { "date": "2026-05-03", "what": "Calm + composer polish: breath-mimicking checkbox animation (~1.5s inhale → exhale, confetti released on the exhale, 3-stage haptics), wider painterly wheat stalks (3–6pt range, 5-tone palette varying hue + saturation + brightness), composer category snaps to the active filter chip, ViewThatFits chip overflow with pinned Inbox + Categories dropdown, Add button moved to the keyboard toolbar (inline Add removed), Done button moved to the left to stop overlapping the previous inline Add.", "tags": ["swiftui", "ux", "animation"] },
         { "date": "2026-04-28", "what": "1.0 approved on the App Store as 'Garden – Notes & Calm' (Build 5).", "tags": ["ios", "app-store", "founding"], "learned": "Plan B confirmed: empty-array privacy manifests trip ITMS-91056 — deleting the manifest (when no required-reason APIs are used) is the unblock." },
         { "date": "2026-04-28", "what": "Tracker JSON reshaped to the project-dashboard's columns/priorities/backlog schema; Decision 27 encodes the spec.", "tags": ["docs", "architecture"], "learned": "Encode external schemas as numbered decisions so future sessions don't drift back into the wrong shape." },
         { "date": "2026-04-27", "what": "1.0 submission unblocked: dropped iPad target, set encryption exemption, deleted privacy manifest.", "tags": ["ios", "app-store"] },

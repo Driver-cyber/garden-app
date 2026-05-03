@@ -4,6 +4,7 @@ import UIKit
 struct OneThingCard: View {
     @AppStorage("garden.oneThingCheckedAt") private var checkedAt: Double = 0
     @State private var confettiTrigger: Int = 0
+    @State private var balloonScale: CGFloat = 1.0
 
     private var isCheckedToday: Bool {
         guard checkedAt > 0 else { return false }
@@ -22,19 +23,22 @@ struct OneThingCard: View {
                     .foregroundStyle(Color.ink2)
 
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(isCheckedToday ? Color.sageDeep : Color.bg)
-                        .frame(width: 96, height: 96)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18)
-                                .stroke(Color.line, lineWidth: 1.5)
-                        )
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(isCheckedToday ? Color.sageDeep : Color.bg)
+                            .frame(width: 96, height: 96)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Color.line, lineWidth: 1.5)
+                            )
 
-                    if isCheckedToday {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 48, weight: .medium))
-                            .foregroundStyle(Color.paper)
+                        if isCheckedToday {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 48, weight: .medium))
+                                .foregroundStyle(Color.paper)
+                        }
                     }
+                    .scaleEffect(balloonScale)
 
                     ConfettiView(trigger: confettiTrigger)
                 }
@@ -64,13 +68,23 @@ struct OneThingCard: View {
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } else {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.72)) {
+            // Inhale → exhale. ~1.5s total. Confetti releases on the exhale.
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+            withAnimation(.easeOut(duration: 0.9)) {
+                balloonScale = 1.22
                 checkedAt = Date.now.timeIntervalSince1970
             }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            confettiTrigger += 1
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                withAnimation(.easeIn(duration: 0.6)) {
+                    balloonScale = 1.0
+                }
+                confettiTrigger += 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ import SwiftData
 
 struct NoteComposerView: View {
     let categories: [Category]
+    var filterCategoryID: UUID? = nil
     var onManageCategories: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     @State private var draft: String = ""
@@ -10,7 +11,7 @@ struct NoteComposerView: View {
     @FocusState private var isComposerFocused: Bool
 
     private var resolvedCategoryID: UUID? {
-        draftCategoryID ?? defaultTBDID() ?? categories.first?.id
+        draftCategoryID ?? filterCategoryID ?? defaultInboxID() ?? defaultTBDID() ?? categories.first?.id
     }
 
     private var resolvedCategoryName: String {
@@ -59,19 +60,15 @@ struct NoteComposerView: View {
                 .animation(.easeInOut(duration: 0.18), value: isComposerFocused)
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
                         Button("Done") { isComposerFocused = false }
                             .foregroundStyle(Color.sageDeep)
+                        Spacer()
+                        Button("Add") { addNote() }
+                            .disabled(!canAdd)
+                            .foregroundStyle(canAdd ? Color.sageDeep : Color.ink3)
+                            .bold()
                     }
                 }
-
-            HStack {
-                Spacer()
-                Button("Add") { addNote() }
-                    .disabled(!canAdd)
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.sageDeep)
-            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -81,6 +78,12 @@ struct NoteComposerView: View {
                     Divider().background(Color.line)
                 }
         )
+        .onChange(of: filterCategoryID) { _, new in
+            draftCategoryID = new
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .gardenFocusComposer)) { _ in
+            isComposerFocused = true
+        }
     }
 
     private var canAdd: Bool {
@@ -96,10 +99,16 @@ struct NoteComposerView: View {
             draft = ""
         }
         isComposerFocused = false
+        InboxCountStore.refresh(in: modelContext)
     }
 
     private func defaultTBDID() -> UUID? {
         guard let s = UserDefaults.standard.string(forKey: "garden.tbd.categoryID") else { return nil }
+        return UUID(uuidString: s)
+    }
+
+    private func defaultInboxID() -> UUID? {
+        guard let s = GardenStoreLocator.sharedDefaults.string(forKey: "garden.inbox.categoryID") else { return nil }
         return UUID(uuidString: s)
     }
 }

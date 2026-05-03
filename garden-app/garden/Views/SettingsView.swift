@@ -32,6 +32,7 @@ struct SettingsView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         aboutCard
+                        quickCaptureCard
                         exportCard
                         philosophyCard
                     }
@@ -72,6 +73,46 @@ struct SettingsView: View {
                     .foregroundStyle(Color.ink2)
             }
             .padding(.top, 8)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.paper)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.line, lineWidth: 1)
+        )
+    }
+
+    // MARK: Quick Capture
+
+    private var quickCaptureCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick capture")
+                .font(.system(.caption, design: .monospaced))
+                .foregroundStyle(Color.ink3)
+                .textCase(.uppercase)
+
+            Text("Speak or type to Inbox")
+                .font(.headline)
+                .foregroundStyle(Color.ink)
+
+            Text("Install the Garden Inbox Shortcut. Tap once to choose Speak or Type, capture a note, and it lands in your Inbox without opening the app.")
+                .font(.footnote)
+                .foregroundStyle(Color.ink2)
+
+            Link(destination: URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c")!) {
+                Label("Install Garden Inbox Shortcut", systemImage: "square.and.arrow.down")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color.sageDeep)
+            .padding(.top, 4)
+
+            Text("Tip: in iOS Settings → Action Button, assign this Shortcut for the fastest capture from anywhere.")
+                .font(.caption)
+                .foregroundStyle(Color.ink3)
+                .padding(.top, 2)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
