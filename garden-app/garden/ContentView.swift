@@ -9,8 +9,8 @@ import SwiftUI
 
 extension Notification.Name {
     static let gardenFocusComposer = Notification.Name("garden.focusComposer")
-    static let gardenInboxEnabled = Notification.Name("garden.inboxEnabled")
     static let gardenShowSettings = Notification.Name("garden.showSettings")
+    // gardenInboxEnabled lives in InboxGate.swift so the widget extension target sees it.
 }
 
 struct ContentView: View {

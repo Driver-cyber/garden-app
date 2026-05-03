@@ -50,3 +50,10 @@ enum InboxGate {
     }
 }
 
+// Defined here (not in ContentView) so the widget extension target — which
+// includes InboxGate but not ContentView — can resolve the symbol when
+// AddToGardenInboxIntent posts it.
+extension Notification.Name {
+    static let gardenInboxEnabled = Notification.Name("garden.inboxEnabled")
+}
+

@@ -69,6 +69,7 @@
 				Helpers/AddToGardenInboxIntent.swift,
 				Helpers/GardenStoreLocator.swift,
 				Helpers/InboxCountStore.swift,
+				Helpers/InboxGate.swift,
 				Models/Category.swift,
 				Models/Note.swift,
 			);
