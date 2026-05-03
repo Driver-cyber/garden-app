@@ -212,6 +212,7 @@
   {
     "date": "2026-05-03",
     "session": "v2 build day — widgets, App Group store, Garden Inbox Shortcut, Calm/composer polish",
+    "mood": "🌾",
     "summary": "Marathon build session that took Garden from v1.0 (notes + Calm only) to v2-feature-complete: Home Screen dashboard widget, Lock Screen circular + rectangular accessories, App Group SwiftData store with one-time migration, AddToGardenInboxIntent App Intent + Garden Inbox user Shortcut (Speak/Type) distributed via iCloud share link with one-tap installer in Settings, breath-mimicking Calm checkbox animation, painterly multi-tone wheat field with chunkier stalks, Inbox-as-default category with idempotent dedup pass against CloudKit-restored duplicates, ViewThatFits chip overflow, keyboard-toolbar Add. Everything compiled clean across both targets; Chad is testing on device. v2 unblocks the friends/family share once Chad signs off and CloudKit prod schema is deployed.",
     "completed": [
       "Widget extension target wired (Chad created in Xcode, Claude wrote all the Swift): GardenWidget bundle with one Widget supporting .systemMedium (dashboard), .accessoryCircular (quick compose), and .accessoryRectangular (Inbox count). TimelineProvider reads count from shared UserDefaults; main app writes via InboxCountStore.refresh + WidgetCenter.reloadAllTimelines.",
