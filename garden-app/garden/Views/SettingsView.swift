@@ -4,12 +4,15 @@ import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.openURL) private var openURL
 
     @Query(sort: \Note.createdAt, order: .reverse) private var allNotes: [Note]
     @Query(sort: \Category.sortOrder) private var categories: [Category]
 
     @State private var includeArchived: Bool = true
     @State private var copyConfirm: Bool = false
+    @State private var inboxEnabled: Bool = InboxGate.isEnabled
 
     private var exportNotes: [Note] {
         includeArchived ? allNotes : allNotes.filter { $0.status == .active }
@@ -88,21 +91,39 @@ struct SettingsView: View {
 
     private var quickCaptureCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Quick capture")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(Color.ink3)
-                .textCase(.uppercase)
+            HStack {
+                Text("Quick capture")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(Color.ink3)
+                    .textCase(.uppercase)
+                Spacer()
+                if inboxEnabled {
+                    Label("Enabled", systemImage: "checkmark.circle.fill")
+                        .font(.caption2)
+                        .foregroundStyle(Color.sageDeep)
+                        .labelStyle(.titleAndIcon)
+                }
+            }
 
-            Text("Speak or type to Inbox")
+            Text(inboxEnabled ? "Inbox is set up" : "Speak or type to Inbox")
                 .font(.headline)
                 .foregroundStyle(Color.ink)
 
-            Text("Install the Garden Inbox Shortcut. Tap once to choose Speak or Type, capture a note, and it lands in your Inbox without opening the app.")
+            Text(inboxEnabled
+                 ? "The Garden Inbox Shortcut is installed. Tap the widget Compose button, the lock screen accessory, or assign the Shortcut to your Action Button for the fastest capture."
+                 : "The Inbox category is gated behind this Shortcut. Install it once — tap Compose anywhere (widget, lock screen, Action Button) to choose Speak or Type, and notes land silently in your Inbox.")
                 .font(.footnote)
                 .foregroundStyle(Color.ink2)
 
-            Link(destination: URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c")!) {
-                Label("Install Garden Inbox Shortcut", systemImage: "square.and.arrow.down")
+            Button {
+                InboxGate.enable(in: modelContext)
+                inboxEnabled = true
+                if let url = URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c") {
+                    openURL(url)
+                }
+            } label: {
+                Label(inboxEnabled ? "Reinstall Garden Inbox Shortcut" : "Install Garden Inbox Shortcut",
+                      systemImage: "square.and.arrow.down")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -122,6 +143,9 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.line, lineWidth: 1)
         )
+        .onReceive(NotificationCenter.default.publisher(for: .gardenInboxEnabled)) { _ in
+            inboxEnabled = true
+        }
     }
 
     // MARK: Export

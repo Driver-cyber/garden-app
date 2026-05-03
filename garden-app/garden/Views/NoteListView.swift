@@ -4,6 +4,8 @@ import SwiftData
 struct NoteListView: View {
     let selectedCategoryID: UUID?
     let searchQuery: String
+    var selectionMode: Bool = false
+    @Binding var selectedNoteIDs: Set<UUID>
 
     @Query(sort: \Note.createdAt, order: .reverse) private var allNotes: [Note]
     @Query(sort: \Category.sortOrder) private var categories: [Category]
@@ -43,18 +45,27 @@ struct NoteListView: View {
                         .padding(.top, 40)
                 } else {
                     ForEach(active) { note in
-                        NoteRowView(note: note, categoryName: categoryName(for: note))
+                        NoteRowView(
+                            note: note,
+                            categoryName: categoryName(for: note),
+                            selectionMode: selectionMode,
+                            isSelected: selectedNoteIDs.contains(note.id),
+                            onSelectTap: { toggle(note.id) }
+                        )
                     }
-                    ArchivedNotesSection(
-                        archived: archived,
-                        categoryName: categoryName(for:),
-                        isExpanded: $archivedExpanded
-                    )
+                    if !selectionMode {
+                        ArchivedNotesSection(
+                            archived: archived,
+                            categoryName: categoryName(for:),
+                            isExpanded: $archivedExpanded
+                        )
+                    }
                 }
             }
             .padding(14)
         }
         .scrollDismissesKeyboard(.interactively)
+        .animation(.spring(response: 0.35, dampingFraction: 0.78), value: selectionMode)
     }
 
     private var emptyMessage: String {
@@ -64,5 +75,13 @@ struct NoteListView: View {
 
     private func categoryName(for note: Note) -> String {
         categories.first(where: { $0.id == note.categoryID })?.name ?? "—"
+    }
+
+    private func toggle(_ id: UUID) {
+        if selectedNoteIDs.contains(id) {
+            selectedNoteIDs.remove(id)
+        } else {
+            selectedNoteIDs.insert(id)
+        }
     }
 }

@@ -7,11 +7,12 @@ import AppIntents
 struct GardenEntry: TimelineEntry {
     let date: Date
     let inboxCount: Int
+    let inboxEnabled: Bool
 }
 
 struct GardenProvider: TimelineProvider {
     func placeholder(in context: Context) -> GardenEntry {
-        GardenEntry(date: Date(), inboxCount: 0)
+        GardenEntry(date: Date(), inboxCount: 0, inboxEnabled: false)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GardenEntry) -> Void) {
@@ -25,9 +26,10 @@ struct GardenProvider: TimelineProvider {
     }
 
     private func currentEntry() -> GardenEntry {
-        let count = UserDefaults(suiteName: "group.com.drivercyber.garden")?
-            .integer(forKey: "garden.inboxCount") ?? 0
-        return GardenEntry(date: Date(), inboxCount: count)
+        let defaults = UserDefaults(suiteName: "group.com.drivercyber.garden")
+        let count = defaults?.integer(forKey: "garden.inboxCount") ?? 0
+        let enabled = defaults?.bool(forKey: "garden.inboxEnabled") ?? false
+        return GardenEntry(date: Date(), inboxCount: count, inboxEnabled: enabled)
     }
 }
 
@@ -42,7 +44,7 @@ struct GardenWidgetEntryView: View {
         case .systemMedium:
             DashboardView(entry: entry)
         case .accessoryCircular:
-            QuickComposeAccessoryView()
+            QuickComposeAccessoryView(enabled: entry.inboxEnabled)
         case .accessoryRectangular:
             InboxCountAccessoryView(entry: entry)
         default:
@@ -55,6 +57,12 @@ struct GardenWidgetEntryView: View {
 
 private struct DashboardView: View {
     let entry: GardenEntry
+
+    private var composeURL: URL {
+        entry.inboxEnabled
+            ? URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
+            : URL(string: "garden://setup-inbox")!
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -71,11 +79,11 @@ private struct DashboardView: View {
             }
 
             HStack(spacing: 8) {
-                Link(destination: URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!) {
+                Link(destination: composeURL) {
                     DashboardButtonLabel(
                         icon: "tray.and.arrow.down",
                         title: "Compose",
-                        subtitle: "to Inbox"
+                        subtitle: entry.inboxEnabled ? "to Inbox" : "set up Inbox"
                     )
                 }
 
@@ -88,14 +96,27 @@ private struct DashboardView: View {
                 }
             }
 
-            HStack(spacing: 6) {
-                Image(systemName: "tray")
-                    .font(.caption2)
-                Text(inboxLine)
-                    .font(.caption)
-                Spacer()
+            if entry.inboxEnabled {
+                HStack(spacing: 6) {
+                    Image(systemName: "tray")
+                        .font(.caption2)
+                    Text(inboxLine)
+                        .font(.caption)
+                    Spacer()
+                }
+                .foregroundStyle(Color.ink3)
+            } else {
+                Link(destination: URL(string: "garden://setup-inbox")!) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                        Text("Tap to set up Inbox")
+                            .font(.caption)
+                        Spacer()
+                    }
+                    .foregroundStyle(Color.ink3)
+                }
             }
-            .foregroundStyle(Color.ink3)
         }
         .padding(12)
         .containerBackground(Color.bg, for: .widget)
@@ -142,11 +163,19 @@ private struct DashboardButtonLabel: View {
 // MARK: - Lock Screen Circular (Quick Compose)
 
 private struct QuickComposeAccessoryView: View {
+    let enabled: Bool
+
+    private var url: URL {
+        enabled
+            ? URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
+            : URL(string: "garden://setup-inbox")!
+    }
+
     var body: some View {
-        Link(destination: URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!) {
+        Link(destination: url) {
             ZStack {
                 AccessoryWidgetBackground()
-                Image(systemName: "tray.and.arrow.down")
+                Image(systemName: enabled ? "tray.and.arrow.down" : "sparkles")
                     .imageScale(.large)
             }
         }
@@ -154,22 +183,37 @@ private struct QuickComposeAccessoryView: View {
     }
 }
 
-// MARK: - Lock Screen Rectangular (Inbox Count)
+// MARK: - Lock Screen Rectangular (Inbox Count / Setup)
 
 private struct InboxCountAccessoryView: View {
     let entry: GardenEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text("Garden")
-                .font(.caption2)
-            Text(headline)
-                .font(.headline)
-            Text("Inbox")
-                .font(.caption2)
+        if entry.inboxEnabled {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Garden")
+                    .font(.caption2)
+                Text(headline)
+                    .font(.headline)
+                Text("Inbox")
+                    .font(.caption2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .containerBackground(.clear, for: .widget)
+        } else {
+            Link(destination: URL(string: "garden://setup-inbox")!) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Garden")
+                        .font(.caption2)
+                    Text("Set up")
+                        .font(.headline)
+                    Text("Inbox")
+                        .font(.caption2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .containerBackground(.clear, for: .widget)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .containerBackground(.clear, for: .widget)
     }
 
     private var headline: String {
@@ -203,6 +247,7 @@ struct GardenWidget: Widget {
 #Preview(as: .systemMedium) {
     GardenWidget()
 } timeline: {
-    GardenEntry(date: .now, inboxCount: 0)
-    GardenEntry(date: .now, inboxCount: 4)
+    GardenEntry(date: .now, inboxCount: 0, inboxEnabled: false)
+    GardenEntry(date: .now, inboxCount: 0, inboxEnabled: true)
+    GardenEntry(date: .now, inboxCount: 4, inboxEnabled: true)
 }

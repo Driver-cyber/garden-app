@@ -9,6 +9,8 @@ import SwiftUI
 
 extension Notification.Name {
     static let gardenFocusComposer = Notification.Name("garden.focusComposer")
+    static let gardenInboxEnabled = Notification.Name("garden.inboxEnabled")
+    static let gardenShowSettings = Notification.Name("garden.showSettings")
 }
 
 struct ContentView: View {
@@ -38,6 +40,11 @@ struct ContentView: View {
                 selection = 0
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     NotificationCenter.default.post(name: .gardenFocusComposer, object: nil)
+                }
+            case "settings", "setup-inbox":
+                selection = 0
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    NotificationCenter.default.post(name: .gardenShowSettings, object: nil)
                 }
             default:
                 break

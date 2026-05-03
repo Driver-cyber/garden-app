@@ -19,10 +19,6 @@ struct AddToGardenInboxIntent: AppIntent {
             return .result(dialog: "Nothing to add.")
         }
 
-        guard let inboxID = inboxCategoryID() else {
-            return .result(dialog: "Open Garden once so it can set up the Inbox.")
-        }
-
         let schema = Schema([Note.self, Category.self])
         let config = ModelConfiguration(
             schema: schema,
@@ -31,6 +27,14 @@ struct AddToGardenInboxIntent: AppIntent {
         )
         let container = try ModelContainer(for: schema, configurations: [config])
         let context = ModelContext(container)
+
+        // Running the intent is definitive proof the Shortcut is installed.
+        // enable() also lazily creates the Inbox category if missing.
+        InboxGate.enable(in: context)
+
+        guard let inboxID = inboxCategoryID() else {
+            return .result(dialog: "Couldn't open the Inbox.")
+        }
 
         context.insert(Note(categoryID: inboxID, text: trimmed))
         try context.save()
@@ -41,7 +45,7 @@ struct AddToGardenInboxIntent: AppIntent {
     }
 
     private func inboxCategoryID() -> UUID? {
-        guard let s = GardenStoreLocator.sharedDefaults.string(forKey: "garden.inbox.categoryID") else { return nil }
+        guard let s = GardenStoreLocator.sharedDefaults.string(forKey: InboxGate.inboxIDKey) else { return nil }
         return UUID(uuidString: s)
     }
 }

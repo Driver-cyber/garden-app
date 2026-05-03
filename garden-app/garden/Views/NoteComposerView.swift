@@ -11,7 +11,16 @@ struct NoteComposerView: View {
     @FocusState private var isComposerFocused: Bool
 
     private var resolvedCategoryID: UUID? {
-        draftCategoryID ?? filterCategoryID ?? defaultInboxID() ?? defaultTBDID() ?? categories.first?.id
+        let candidates: [UUID?] = [
+            draftCategoryID,
+            filterCategoryID,
+            defaultInboxID(),
+            defaultTBDID(),
+            categories.first?.id,
+        ]
+        return candidates.compactMap { $0 }.first { id in
+            categories.contains(where: { $0.id == id })
+        }
     }
 
     private var resolvedCategoryName: String {

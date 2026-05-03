@@ -77,17 +77,6 @@ struct gardenApp: App {
 
         let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
 
-        if !categories.contains(where: { $0.name == "Inbox" }) {
-            let inbox = Category(name: "Inbox")
-            inbox.sortOrder = (categories.map(\.sortOrder).min() ?? 1) - 1
-            context.insert(inbox)
-            do {
-                try context.save()
-            } catch {
-                print("Inbox seed failed: \(error)")
-            }
-        }
-
         // Legacy TBD: no longer seeded, but preserve its ID for users who already have one.
         if local.string(forKey: "garden.tbd.categoryID") == nil,
            let tbd = categories.first(where: { $0.name == "Ideas / TBD" }) {
@@ -99,17 +88,19 @@ struct gardenApp: App {
         reconcile(in: context)
     }
 
-    /// Dedup categories, refresh the shared Inbox ID, and refresh the widget count.
-    /// Safe to call repeatedly — each step is idempotent.
+    /// Dedup categories, refresh the shared Inbox ID (if Inbox exists), and
+    /// refresh the widget count. Safe to call repeatedly.
     @MainActor
     private func reconcile(in context: ModelContext) {
         Self.dedupCategories(in: context)
 
-        if let categories = try? context.fetch(FetchDescriptor<Category>()),
-           let inbox = categories.first(where: { $0.name == "Inbox" }) {
+        let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
+        if let inbox = categories.first(where: { $0.name == "Inbox" }) {
             GardenStoreLocator.sharedDefaults.set(
-                inbox.id.uuidString, forKey: "garden.inbox.categoryID"
+                inbox.id.uuidString, forKey: InboxGate.inboxIDKey
             )
+        } else {
+            GardenStoreLocator.sharedDefaults.removeObject(forKey: InboxGate.inboxIDKey)
         }
 
         InboxCountStore.refresh(in: context)
