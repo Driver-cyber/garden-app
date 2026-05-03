@@ -58,11 +58,13 @@ struct GardenWidgetEntryView: View {
 private struct DashboardView: View {
     let entry: GardenEntry
 
-    private var composeURL: URL {
-        entry.inboxEnabled
-            ? URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
-            : URL(string: "garden://setup-inbox")!
-    }
+    // Always route Compose to the Shortcut. Reading entry.inboxEnabled here
+    // was unreliable — App Group UserDefaults can be stale in the widget
+    // process even after WidgetCenter.reloadAllTimelines(). For users who
+    // haven't installed the Shortcut yet, the count line below still nudges
+    // them to set up; Shortcuts.app's "Shortcut not found" is acceptable
+    // recovery feedback for the rare miss.
+    private let composeURL = URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
 
     var body: some View {
         VStack(spacing: 8) {
@@ -83,7 +85,7 @@ private struct DashboardView: View {
                     DashboardButtonLabel(
                         icon: "tray.and.arrow.down",
                         title: "Compose",
-                        subtitle: entry.inboxEnabled ? "to Inbox" : "set up Inbox"
+                        subtitle: "to Inbox"
                     )
                 }
 
@@ -165,17 +167,14 @@ private struct DashboardButtonLabel: View {
 private struct QuickComposeAccessoryView: View {
     let enabled: Bool
 
-    private var url: URL {
-        enabled
-            ? URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
-            : URL(string: "garden://setup-inbox")!
-    }
-
     var body: some View {
-        Link(destination: url) {
+        // Always route to the Shortcut for the same reason as DashboardView:
+        // App Group defaults sync is too slow to gate a tap action on. The
+        // `enabled` flag is kept only as a hint for the icon glyph.
+        Link(destination: URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!) {
             ZStack {
                 AccessoryWidgetBackground()
-                Image(systemName: enabled ? "tray.and.arrow.down" : "sparkles")
+                Image(systemName: "tray.and.arrow.down")
                     .imageScale(.large)
             }
         }
