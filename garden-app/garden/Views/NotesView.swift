@@ -7,28 +7,22 @@ struct NotesView: View {
 
     @Query(sort: \Category.sortOrder) private var categories: [Category]
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.scenePhase) private var scenePhase
 
     @State private var selectedCategoryID: UUID?
     @State private var showExport: Bool = false
     @State private var showCategoryManager: Bool = false
     @State private var searchQuery: String = ""
-    @State private var inboxEnabled: Bool = InboxGate.isEnabled
 
     @State private var selectionMode: Bool = false
     @State private var selectedNoteIDs: Set<UUID> = []
 
-    private var visibleCategories: [Category] {
-        inboxEnabled ? categories : categories.filter { $0.name != "Inbox" }
-    }
-
     private var visibleSelectedID: UUID? {
         guard let id = selectedCategoryID else { return nil }
-        return visibleCategories.contains(where: { $0.id == id }) ? id : nil
+        return categories.contains(where: { $0.id == id }) ? id : nil
     }
 
     private var moveDestinations: [Category] {
-        visibleCategories.filter { $0.id != visibleSelectedID }
+        categories.filter { $0.id != visibleSelectedID }
     }
 
     var body: some View {
@@ -37,7 +31,7 @@ struct NotesView: View {
                 Color.bg.ignoresSafeArea()
                 VStack(spacing: 0) {
                     CategoryChipsView(
-                        categories: visibleCategories,
+                        categories: categories,
                         selectedID: Binding(
                             get: { visibleSelectedID },
                             set: { selectedCategoryID = $0 }
@@ -65,7 +59,7 @@ struct NotesView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     } else {
                         NoteComposerView(
-                            categories: visibleCategories,
+                            categories: categories,
                             filterCategoryID: visibleSelectedID,
                             onManageCategories: { showCategoryManager = true }
                         )
@@ -114,17 +108,6 @@ struct NotesView: View {
                 CategoryManagerSheet()
             }
             .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search notes")
-            .onAppear {
-                inboxEnabled = InboxGate.isEnabled
-            }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .active {
-                    inboxEnabled = InboxGate.isEnabled
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .gardenInboxEnabled)) { _ in
-                inboxEnabled = true
-            }
         }
     }
 

@@ -117,7 +117,6 @@ struct NoteComposerView: View {
     }
 
     private func defaultInboxID() -> UUID? {
-        guard let s = GardenStoreLocator.sharedDefaults.string(forKey: "garden.inbox.categoryID") else { return nil }
-        return UUID(uuidString: s)
+        categories.first(where: { $0.name == "Inbox" })?.id
     }
 }

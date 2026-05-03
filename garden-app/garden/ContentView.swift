@@ -9,7 +9,6 @@ import SwiftUI
 
 extension Notification.Name {
     static let gardenFocusComposer = Notification.Name("garden.focusComposer")
-    // gardenInboxEnabled lives in InboxGate.swift so the widget extension target sees it.
 }
 
 struct ContentView: View {
@@ -46,7 +45,12 @@ struct ContentView: View {
                 }
             case "settings", "setup-inbox":
                 selection = 0
-                showSettings = true
+                // Defer one runloop tick so the tab selection settles before
+                // the sheet attempts to present — presenting both in the same
+                // cycle was hanging the app on cold-launch deep links.
+                DispatchQueue.main.async {
+                    showSettings = true
+                }
             default:
                 break
             }

@@ -88,21 +88,10 @@ struct gardenApp: App {
         reconcile(in: context)
     }
 
-    /// Dedup categories, refresh the shared Inbox ID (if Inbox exists), and
-    /// refresh the widget count. Safe to call repeatedly.
+    /// Dedup categories and nudge the widget to refresh.
     @MainActor
     private func reconcile(in context: ModelContext) {
         Self.dedupCategories(in: context)
-
-        let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-        if let inbox = categories.first(where: { $0.name == "Inbox" }) {
-            GardenStoreLocator.sharedDefaults.set(
-                inbox.id.uuidString, forKey: InboxGate.inboxIDKey
-            )
-        } else {
-            GardenStoreLocator.sharedDefaults.removeObject(forKey: InboxGate.inboxIDKey)
-        }
-
         InboxCountStore.refresh(in: context)
     }
 

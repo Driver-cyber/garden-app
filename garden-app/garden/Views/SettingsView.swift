@@ -12,7 +12,10 @@ struct SettingsView: View {
 
     @State private var includeArchived: Bool = true
     @State private var copyConfirm: Bool = false
-    @State private var inboxEnabled: Bool = InboxGate.isEnabled
+
+    private var inboxEnabled: Bool {
+        categories.contains { $0.name == "Inbox" }
+    }
 
     private var exportNotes: [Note] {
         includeArchived ? allNotes : allNotes.filter { $0.status == .active }
@@ -117,7 +120,6 @@ struct SettingsView: View {
 
             Button {
                 InboxGate.enable(in: modelContext)
-                inboxEnabled = true
                 if let url = URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c") {
                     openURL(url)
                 }
@@ -143,9 +145,6 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(Color.line, lineWidth: 1)
         )
-        .onReceive(NotificationCenter.default.publisher(for: .gardenInboxEnabled)) { _ in
-            inboxEnabled = true
-        }
     }
 
     // MARK: Export
