@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import SwiftData
 import AppIntents
 
 // MARK: - Entry & Provider
@@ -26,10 +27,35 @@ struct GardenProvider: TimelineProvider {
     }
 
     private func currentEntry() -> GardenEntry {
-        let defaults = UserDefaults(suiteName: "group.com.drivercyber.garden")
-        let count = defaults?.integer(forKey: "garden.inboxCount") ?? 0
-        let enabled = defaults?.bool(forKey: "garden.inboxEnabled") ?? false
-        return GardenEntry(date: Date(), inboxCount: count, inboxEnabled: enabled)
+        let snap = readSnapshot()
+        return GardenEntry(date: Date(), inboxCount: snap.count, inboxEnabled: snap.enabled)
+    }
+
+    /// Read directly from the App Group SwiftData store instead of UserDefaults.
+    /// Cross-process UserDefaults sync between the main app and the widget process
+    /// is famously laggy — even after WidgetCenter.reloadAllTimelines(). The local
+    /// SQLite store is the source of truth and SQLite handles concurrent reads
+    /// from a separate process cleanly.
+    private func readSnapshot() -> (count: Int, enabled: Bool) {
+        let schema = Schema([Note.self, Category.self])
+        let config = ModelConfiguration(
+            schema: schema,
+            url: GardenStoreLocator.storeURL,
+            cloudKitDatabase: .automatic
+        )
+        do {
+            let container = try ModelContainer(for: schema, configurations: [config])
+            let context = ModelContext(container)
+            let categories = try context.fetch(FetchDescriptor<Category>())
+            guard let inbox = categories.first(where: { $0.name == "Inbox" }) else {
+                return (0, false)
+            }
+            let notes = try context.fetch(FetchDescriptor<Note>())
+            let count = notes.filter { $0.categoryID == inbox.id && $0.status == .active }.count
+            return (count, true)
+        } catch {
+            return (0, false)
+        }
     }
 }
 
