@@ -3,6 +3,8 @@ import SwiftData
 import UIKit
 
 struct NotesView: View {
+    @Binding var showSettings: Bool
+
     @Query(sort: \Category.sortOrder) private var categories: [Category]
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -10,7 +12,6 @@ struct NotesView: View {
     @State private var selectedCategoryID: UUID?
     @State private var showExport: Bool = false
     @State private var showCategoryManager: Bool = false
-    @State private var showSettings: Bool = false
     @State private var searchQuery: String = ""
     @State private var inboxEnabled: Bool = InboxGate.isEnabled
 
@@ -112,9 +113,6 @@ struct NotesView: View {
             .sheet(isPresented: $showCategoryManager) {
                 CategoryManagerSheet()
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            }
             .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search notes")
             .onAppear {
                 inboxEnabled = InboxGate.isEnabled
@@ -126,9 +124,6 @@ struct NotesView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .gardenInboxEnabled)) { _ in
                 inboxEnabled = true
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .gardenShowSettings)) { _ in
-                showSettings = true
             }
         }
     }
@@ -157,5 +152,5 @@ struct NotesView: View {
 }
 
 #Preview {
-    NotesView()
+    NotesView(showSettings: .constant(false))
 }
