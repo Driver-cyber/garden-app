@@ -108,6 +108,11 @@ struct NotesView: View {
                 CategoryManagerSheet()
             }
             .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search notes")
+            .onReceive(NotificationCenter.default.publisher(for: .gardenSelectInbox)) { _ in
+                if let inbox = categories.first(where: { $0.name == "Inbox" }) {
+                    selectedCategoryID = inbox.id
+                }
+            }
         }
     }
 

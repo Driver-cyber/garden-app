@@ -108,20 +108,23 @@ private struct DashboardView: View {
             }
 
             HStack(spacing: 8) {
-                Link(destination: composeURL) {
-                    DashboardButtonLabel(
-                        icon: "tray.and.arrow.down",
-                        title: "Compose",
-                        subtitle: "to Inbox"
-                    )
+                VStack(spacing: 8) {
+                    Link(destination: composeURL) {
+                        CompactButtonLabel(
+                            icon: "tray.and.arrow.down",
+                            title: "Compose"
+                        )
+                    }
+                    Link(destination: URL(string: "garden://inbox")!) {
+                        CompactButtonLabel(
+                            icon: "tray.full",
+                            title: "Inbox"
+                        )
+                    }
                 }
 
                 Link(destination: URL(string: "garden://calm")!) {
-                    DashboardButtonLabel(
-                        icon: "leaf",
-                        title: "Calm",
-                        subtitle: "one breath"
-                    )
+                    BigCalmButton()
                 }
             }
 
@@ -160,26 +163,48 @@ private struct DashboardView: View {
     }
 }
 
-private struct DashboardButtonLabel: View {
+private struct CompactButtonLabel: View {
     let icon: String
     let title: String
-    let subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(.subheadline)
                 .foregroundStyle(Color.sageDeep)
-                .padding(.bottom, 2)
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.ink)
-            Text(subtitle)
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.paper)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.line, lineWidth: 0.5)
+        )
+    }
+}
+
+private struct BigCalmButton: View {
+    var body: some View {
+        VStack(spacing: 4) {
+            Spacer()
+            Image(systemName: "leaf")
+                .font(.title)
+                .foregroundStyle(Color.sageDeep)
+            Text("Calm")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.ink)
+            Text("one breath")
                 .font(.caption2)
                 .foregroundStyle(Color.ink2)
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 8)
         .background(Color.paper)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
