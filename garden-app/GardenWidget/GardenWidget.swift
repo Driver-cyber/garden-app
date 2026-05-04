@@ -3,17 +3,29 @@ import SwiftUI
 import SwiftData
 import AppIntents
 
-// MARK: - Entry & Provider
+// MARK: - Snapshot of a single inbox note for the entry
+
+struct InboxNoteSnapshot: Equatable {
+    let id: UUID
+    let text: String
+}
+
+// MARK: - Entry
 
 struct GardenEntry: TimelineEntry {
     let date: Date
-    let inboxCount: Int
     let inboxEnabled: Bool
+    let inboxCount: Int
+    let currentNote: InboxNoteSnapshot?
+    let position: Int  // 0-indexed
 }
+
+// MARK: - Provider
 
 struct GardenProvider: TimelineProvider {
     func placeholder(in context: Context) -> GardenEntry {
-        GardenEntry(date: Date(), inboxCount: 0, inboxEnabled: false)
+        GardenEntry(date: Date(), inboxEnabled: false, inboxCount: 0,
+                    currentNote: nil, position: 0)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (GardenEntry) -> Void) {
@@ -26,17 +38,9 @@ struct GardenProvider: TimelineProvider {
         completion(Timeline(entries: [entry], policy: .after(next)))
     }
 
+    /// Read directly from the App Group SwiftData store. Cross-process
+    /// UserDefaults sync is unreliable; SQLite reads are not.
     private func currentEntry() -> GardenEntry {
-        let snap = readSnapshot()
-        return GardenEntry(date: Date(), inboxCount: snap.count, inboxEnabled: snap.enabled)
-    }
-
-    /// Read directly from the App Group SwiftData store instead of UserDefaults.
-    /// Cross-process UserDefaults sync between the main app and the widget process
-    /// is famously laggy — even after WidgetCenter.reloadAllTimelines(). The local
-    /// SQLite store is the source of truth and SQLite handles concurrent reads
-    /// from a separate process cleanly.
-    private func readSnapshot() -> (count: Int, enabled: Bool) {
         let schema = Schema([Note.self, Category.self])
         let config = ModelConfiguration(
             schema: schema,
@@ -46,183 +50,188 @@ struct GardenProvider: TimelineProvider {
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
             let context = ModelContext(container)
+
             let categories = try context.fetch(FetchDescriptor<Category>())
             guard let inbox = categories.first(where: { $0.name == "Inbox" }) else {
-                return (0, false)
+                return GardenEntry(date: Date(), inboxEnabled: false, inboxCount: 0,
+                                   currentNote: nil, position: 0)
             }
-            let notes = try context.fetch(FetchDescriptor<Note>())
-            let count = notes.filter { $0.categoryID == inbox.id && $0.status == .active }.count
-            return (count, true)
+
+            let descriptor = FetchDescriptor<Note>(sortBy: [SortDescriptor(\.createdAt)])
+            let allNotes = try context.fetch(descriptor)
+            let inboxNotes = allNotes.filter { $0.categoryID == inbox.id && $0.status == .active }
+
+            guard !inboxNotes.isEmpty else {
+                return GardenEntry(date: Date(), inboxEnabled: true, inboxCount: 0,
+                                   currentNote: nil, position: 0)
+            }
+
+            let cursorString = GardenStoreLocator.sharedDefaults.string(forKey: InboxWidgetCursor.key)
+            let cursorID = cursorString.flatMap(UUID.init(uuidString:))
+
+            let position: Int
+            if let cursorID, let idx = inboxNotes.firstIndex(where: { $0.id == cursorID }) {
+                position = idx
+            } else {
+                position = 0
+            }
+
+            let current = inboxNotes[position]
+            return GardenEntry(
+                date: Date(),
+                inboxEnabled: true,
+                inboxCount: inboxNotes.count,
+                currentNote: InboxNoteSnapshot(id: current.id, text: current.text),
+                position: position
+            )
         } catch {
-            return (0, false)
+            return GardenEntry(date: Date(), inboxEnabled: false, inboxCount: 0,
+                               currentNote: nil, position: 0)
         }
     }
 }
 
-// MARK: - Bundle Entry View
+// MARK: - Calm Provider (static, just opens Calm)
 
-struct GardenWidgetEntryView: View {
-    @Environment(\.widgetFamily) private var family
-    let entry: GardenEntry
+struct CalmEntry: TimelineEntry {
+    let date: Date
+}
 
-    var body: some View {
-        switch family {
-        case .systemMedium:
-            DashboardView(entry: entry)
-        case .accessoryCircular:
-            QuickComposeAccessoryView(enabled: entry.inboxEnabled)
-        case .accessoryRectangular:
-            InboxCountAccessoryView(entry: entry)
-        default:
-            DashboardView(entry: entry)
-        }
+struct CalmProvider: TimelineProvider {
+    func placeholder(in context: Context) -> CalmEntry { CalmEntry(date: Date()) }
+    func getSnapshot(in context: Context, completion: @escaping (CalmEntry) -> Void) {
+        completion(CalmEntry(date: Date()))
+    }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<CalmEntry>) -> Void) {
+        completion(Timeline(entries: [CalmEntry(date: Date())], policy: .never))
     }
 }
 
-// MARK: - Dashboard (Home Screen Medium)
+// MARK: - Inbox checklist (medium)
 
-private struct DashboardView: View {
+struct InboxChecklistView: View {
     let entry: GardenEntry
 
-    // Open Garden directly to the composer instead of routing to the
-    // Shortcut. Widget Link → shortcuts://run-shortcut?name=… proved
-    // unreliable in iOS — UIApplication.openURL was choosing the host
-    // app over Shortcuts.app despite no claim to that scheme. The
-    // silent-capture path is still available via the Action Button and
-    // Siri ("Quick capture in Garden"), both of which invoke the user's
-    // Garden Inbox Shortcut without going through a widget Link.
-    private let composeURL = URL(string: "garden://compose")!
-
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("garden")
-                    .font(.system(.title3, design: .serif).italic())
+                Text("garden inbox")
+                    .font(.system(.subheadline, design: .serif).italic())
                     .foregroundStyle(Color.ink)
                 Spacer()
-                Link(destination: URL(string: "garden://notes")!) {
-                    Image(systemName: "arrow.up.right.square")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.ink2)
+                if entry.inboxCount > 0 {
+                    Text("\(entry.position + 1) of \(entry.inboxCount)")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(Color.ink3)
                 }
             }
 
-            HStack(spacing: 8) {
-                VStack(spacing: 8) {
-                    Link(destination: composeURL) {
-                        CompactButtonLabel(
-                            icon: "tray.and.arrow.down",
-                            title: "Compose"
-                        )
-                    }
-                    Link(destination: URL(string: "garden://inbox")!) {
-                        CompactButtonLabel(
-                            icon: "tray.full",
-                            title: "Inbox"
-                        )
-                    }
-                }
-
-                Link(destination: URL(string: "garden://calm")!) {
-                    BigCalmButton()
-                }
-            }
-
-            if entry.inboxEnabled {
-                HStack(spacing: 6) {
-                    Image(systemName: "tray")
-                        .font(.caption2)
-                    Text(inboxLine)
-                        .font(.caption)
-                    Spacer()
-                }
-                .foregroundStyle(Color.ink3)
-            } else {
-                Link(destination: URL(string: "garden://setup-inbox")!) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "sparkles")
-                            .font(.caption2)
-                        Text("Tap to set up Inbox")
-                            .font(.caption)
+            if let note = entry.currentNote {
+                noteRow(note)
+                Spacer(minLength: 0)
+                if entry.inboxCount > 1 {
+                    HStack {
                         Spacer()
+                        Button(intent: AdvanceInboxCursorIntent(currentNoteIDString: note.id.uuidString)) {
+                            HStack(spacing: 4) {
+                                Text("Next")
+                                Image(systemName: "chevron.right")
+                            }
+                            .font(.caption)
+                            .foregroundStyle(Color.sageDeep)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Color.sageTint)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .foregroundStyle(Color.ink3)
                 }
+            } else {
+                emptyState
             }
         }
-        .padding(12)
+        .padding(14)
         .containerBackground(Color.bg, for: .widget)
     }
 
-    private var inboxLine: String {
-        switch entry.inboxCount {
-        case 0: return "Inbox is clear"
-        case 1: return "1 unsorted in Inbox"
-        default: return "\(entry.inboxCount) unsorted in Inbox"
+    private func noteRow(_ note: InboxNoteSnapshot) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Button(intent: ArchiveInboxNoteIntent(noteIDString: note.id.uuidString)) {
+                Image(systemName: "circle")
+                    .font(.title2)
+                    .foregroundStyle(Color.sageDeep)
+            }
+            .buttonStyle(.plain)
+
+            Link(destination: URL(string: "garden://inbox")!) {
+                Text(note.text)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var emptyState: some View {
+        if entry.inboxEnabled {
+            VStack {
+                Spacer()
+                Text("Inbox is clear")
+                    .font(.system(.title3, design: .serif).italic())
+                    .foregroundStyle(Color.ink2)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+        } else {
+            Link(destination: URL(string: "garden://setup-inbox")!) {
+                VStack(spacing: 6) {
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.title2)
+                        .foregroundStyle(Color.sageDeep)
+                    Text("Tap to set up Inbox")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.ink2)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+            }
         }
     }
 }
 
-private struct CompactButtonLabel: View {
-    let icon: String
-    let title: String
+// MARK: - Calm small widget
 
+struct CalmSmallView: View {
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(Color.sageDeep)
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.ink)
-            Spacer()
+        Link(destination: URL(string: "garden://calm")!) {
+            VStack(spacing: 4) {
+                Spacer()
+                Image(systemName: "leaf")
+                    .font(.system(size: 38))
+                    .foregroundStyle(Color.sageDeep)
+                Text("Calm")
+                    .font(.system(.title3, design: .serif).italic())
+                    .foregroundStyle(Color.ink)
+                Text("one breath")
+                    .font(.caption2)
+                    .foregroundStyle(Color.ink2)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, 12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.paper)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
+        .containerBackground(Color.bg, for: .widget)
     }
 }
 
-private struct BigCalmButton: View {
+// MARK: - Lock Screen accessories
+
+struct LockComposeAccessoryView: View {
     var body: some View {
-        VStack(spacing: 4) {
-            Spacer()
-            Image(systemName: "leaf")
-                .font(.title)
-                .foregroundStyle(Color.sageDeep)
-            Text("Calm")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.ink)
-            Text("one breath")
-                .font(.caption2)
-                .foregroundStyle(Color.ink2)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 8)
-        .background(Color.paper)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-    }
-}
-
-// MARK: - Lock Screen Circular (Quick Compose)
-
-private struct QuickComposeAccessoryView: View {
-    let enabled: Bool
-
-    var body: some View {
-        // Same routing as the dashboard Compose: open Garden's composer.
-        // Lock-screen taps require unlock anyway, so the trade-off is
-        // smaller here. Silent capture stays on the Action Button.
         Link(destination: URL(string: "garden://compose")!) {
             ZStack {
                 AccessoryWidgetBackground()
@@ -234,37 +243,36 @@ private struct QuickComposeAccessoryView: View {
     }
 }
 
-// MARK: - Lock Screen Rectangular (Inbox Count / Setup)
-
-private struct InboxCountAccessoryView: View {
+struct LockInboxCountView: View {
     let entry: GardenEntry
 
     var body: some View {
-        if entry.inboxEnabled {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Garden")
-                    .font(.caption2)
-                Text(headline)
-                    .font(.headline)
-                Text("Inbox")
-                    .font(.caption2)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .containerBackground(.clear, for: .widget)
-        } else {
-            Link(destination: URL(string: "garden://setup-inbox")!) {
+        Group {
+            if entry.inboxEnabled {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Garden")
                         .font(.caption2)
-                    Text("Set up")
+                    Text(headline)
                         .font(.headline)
                     Text("Inbox")
                         .font(.caption2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Link(destination: URL(string: "garden://setup-inbox")!) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Garden")
+                            .font(.caption2)
+                        Text("Set up")
+                            .font(.headline)
+                        Text("Inbox")
+                            .font(.caption2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-            .containerBackground(.clear, for: .widget)
         }
+        .containerBackground(.clear, for: .widget)
     }
 
     private var headline: String {
@@ -276,29 +284,73 @@ private struct InboxCountAccessoryView: View {
     }
 }
 
-// MARK: - Widget
+// MARK: - Widget configurations
 
-struct GardenWidget: Widget {
-    let kind: String = "GardenWidget"
+struct GardenInboxWidget: Widget {
+    let kind: String = "GardenInboxWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: GardenProvider()) { entry in
-            GardenWidgetEntryView(entry: entry)
+            InboxChecklistView(entry: entry)
         }
-        .configurationDisplayName("Garden")
-        .description("Compose to Inbox, jump to Calm, see what's unsorted.")
-        .supportedFamilies([
-            .systemMedium,
-            .accessoryCircular,
-            .accessoryRectangular,
-        ])
+        .configurationDisplayName("Garden Inbox")
+        .description("Triage your Inbox: tap to archive, tap Next to skim.")
+        .supportedFamilies([.systemMedium])
     }
 }
 
+struct GardenCalmWidget: Widget {
+    let kind: String = "GardenCalmWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: CalmProvider()) { _ in
+            CalmSmallView()
+        }
+        .configurationDisplayName("Garden Calm")
+        .description("Open the wheat field.")
+        .supportedFamilies([.systemSmall])
+    }
+}
+
+struct GardenLockWidget: Widget {
+    let kind: String = "GardenLockWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: GardenProvider()) { entry in
+            LockWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("Garden Lock Screen")
+        .description("Quick compose + Inbox count.")
+        .supportedFamilies([.accessoryCircular, .accessoryRectangular])
+    }
+}
+
+private struct LockWidgetEntryView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: GardenEntry
+
+    var body: some View {
+        switch family {
+        case .accessoryCircular:
+            LockComposeAccessoryView()
+        case .accessoryRectangular:
+            LockInboxCountView(entry: entry)
+        default:
+            LockComposeAccessoryView()
+        }
+    }
+}
+
+// MARK: - Preview
+
 #Preview(as: .systemMedium) {
-    GardenWidget()
+    GardenInboxWidget()
 } timeline: {
-    GardenEntry(date: .now, inboxCount: 0, inboxEnabled: false)
-    GardenEntry(date: .now, inboxCount: 0, inboxEnabled: true)
-    GardenEntry(date: .now, inboxCount: 4, inboxEnabled: true)
+    GardenEntry(date: .now, inboxEnabled: true, inboxCount: 0, currentNote: nil, position: 0)
+    GardenEntry(date: .now, inboxEnabled: false, inboxCount: 0, currentNote: nil, position: 0)
+    GardenEntry(
+        date: .now, inboxEnabled: true, inboxCount: 5,
+        currentNote: InboxNoteSnapshot(id: UUID(), text: "Pick up dry cleaning tomorrow afternoon"),
+        position: 1
+    )
 }

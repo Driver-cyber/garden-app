@@ -2,8 +2,6 @@
 //  GardenWidgetBundle.swift
 //  GardenWidget
 //
-//  Created by ChadMini on 5/3/26.
-//
 
 import WidgetKit
 import SwiftUI
@@ -11,6 +9,8 @@ import SwiftUI
 @main
 struct GardenWidgetBundle: WidgetBundle {
     var body: some Widget {
-        GardenWidget()
+        GardenInboxWidget()
+        GardenCalmWidget()
+        GardenLockWidget()
     }
 }
