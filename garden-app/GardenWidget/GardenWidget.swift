@@ -131,7 +131,22 @@ struct InboxChecklistView: View {
                 Spacer(minLength: 0)
                 if entry.inboxCount > 1 {
                     HStack {
+                        Button(intent: RewindInboxCursorIntent(currentNoteIDString: note.id.uuidString)) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                Text("Prev")
+                            }
+                            .font(.caption)
+                            .foregroundStyle(Color.sageDeep)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Color.sageTint)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+
                         Spacer()
+
                         Button(intent: AdvanceInboxCursorIntent(currentNoteIDString: note.id.uuidString)) {
                             HStack(spacing: 4) {
                                 Text("Next")

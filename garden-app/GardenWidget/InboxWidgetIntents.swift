@@ -57,7 +57,38 @@ struct AdvanceInboxCursorIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        guard let currentID = UUID(uuidString: currentNoteIDString) else { return .result() }
+        try await InboxCursor.move(from: currentNoteIDString, by: +1)
+        return .result()
+    }
+}
+
+/// Move the cursor to the previous inbox note (wraps around).
+struct RewindInboxCursorIntent: AppIntent {
+    static var title: LocalizedStringResource = "Previous Inbox Note"
+    static var openAppWhenRun: Bool = false
+
+    @Parameter(title: "Current Note ID")
+    var currentNoteIDString: String
+
+    init() {}
+    init(currentNoteIDString: String) {
+        self.currentNoteIDString = currentNoteIDString
+    }
+
+    func perform() async throws -> some IntentResult {
+        try await InboxCursor.move(from: currentNoteIDString, by: -1)
+        return .result()
+    }
+}
+
+enum InboxWidgetCursor {
+    static let key = "garden.widget.inboxCursor"
+}
+
+/// Shared cursor-advance logic for the next + previous intents.
+enum InboxCursor {
+    static func move(from currentIDString: String, by delta: Int) async throws {
+        guard let currentID = UUID(uuidString: currentIDString) else { return }
 
         let schema = Schema([Note.self, Category.self])
         let config = ModelConfiguration(
@@ -69,21 +100,18 @@ struct AdvanceInboxCursorIntent: AppIntent {
         let context = ModelContext(container)
 
         let categories = (try? context.fetch(FetchDescriptor<Category>())) ?? []
-        guard let inbox = categories.first(where: { $0.name == "Inbox" }) else {
-            return .result()
-        }
+        guard let inbox = categories.first(where: { $0.name == "Inbox" }) else { return }
 
         let descriptor = FetchDescriptor<Note>(sortBy: [SortDescriptor(\.createdAt)])
         let notes = (try? context.fetch(descriptor)) ?? []
         let inboxNotes = notes.filter { $0.categoryID == inbox.id && $0.status == .active }
 
-        guard inboxNotes.count > 1 else {
-            // 0 or 1 notes — nowhere to advance.
-            return .result()
-        }
+        guard inboxNotes.count > 1 else { return }
 
-        let currentIndex = inboxNotes.firstIndex(where: { $0.id == currentID }) ?? -1
-        let nextIndex = (currentIndex + 1) % inboxNotes.count
+        let currentIndex = inboxNotes.firstIndex(where: { $0.id == currentID }) ?? 0
+        let count = inboxNotes.count
+        // (i + delta + count) % count handles negative deltas cleanly.
+        let nextIndex = ((currentIndex + delta) % count + count) % count
         let nextID = inboxNotes[nextIndex].id
 
         GardenStoreLocator.sharedDefaults.set(
@@ -91,10 +119,5 @@ struct AdvanceInboxCursorIntent: AppIntent {
         )
 
         WidgetCenter.shared.reloadAllTimelines()
-        return .result()
     }
-}
-
-enum InboxWidgetCursor {
-    static let key = "garden.widget.inboxCursor"
 }
