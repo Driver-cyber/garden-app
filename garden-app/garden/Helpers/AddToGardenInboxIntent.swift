@@ -3,10 +3,10 @@ import Foundation
 import SwiftData
 
 struct AddToGardenInboxIntent: AppIntent {
-    // Title intentionally avoids the substring "Garden Inbox" so iOS can't
-    // fuzzy-match the widget's shortcuts://run-shortcut?name=Garden%20Inbox
-    // URL against this auto-registered AppShortcut (which would hijack the
-    // URL into the host app instead of routing to Shortcuts.app).
+    // Title and shortTitle deliberately avoid the substring "Garden Inbox":
+    // AppShortcuts auto-registers names that iOS may match against any
+    // externally-built shortcuts://run-shortcut?name=... URL, and we want
+    // those to route to Shortcuts.app rather than back into Garden.
     static var title: LocalizedStringResource = "Quick Capture"
     static var description = IntentDescription(
         "Quick-capture a note into Garden's Inbox to sort later."

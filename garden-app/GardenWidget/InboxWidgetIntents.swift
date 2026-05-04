@@ -111,27 +111,6 @@ enum InboxWidgetCursor {
     static let key = "garden.widget.inboxCursor"
 }
 
-/// Widget-local "I've eyeballed this" tracking. Stored as an array of UUID
-/// strings in shared App Group defaults; never written back to SwiftData.
-enum WidgetDoneNotes {
-    static let key = "garden.widget.doneNoteIDs"
-
-    static func isDone(_ id: UUID) -> Bool {
-        guard let ids = GardenStoreLocator.sharedDefaults.stringArray(forKey: key) else { return false }
-        return ids.contains(id.uuidString)
-    }
-
-    static func setDone(_ id: UUID, _ done: Bool) {
-        var ids = GardenStoreLocator.sharedDefaults.stringArray(forKey: key) ?? []
-        if done {
-            if !ids.contains(id.uuidString) { ids.append(id.uuidString) }
-        } else {
-            ids.removeAll { $0 == id.uuidString }
-        }
-        GardenStoreLocator.sharedDefaults.set(ids, forKey: key)
-    }
-}
-
 /// Shared cursor-advance logic for the next + previous intents.
 enum InboxCursor {
     static func move(from currentIDString: String, by delta: Int) async throws {

@@ -88,11 +88,32 @@ struct gardenApp: App {
         reconcile(in: context)
     }
 
-    /// Dedup categories and nudge the widget to refresh.
+    /// Dedup categories, prune widget-local done marks against current Inbox,
+    /// and nudge the widget to refresh.
     @MainActor
     private func reconcile(in context: ModelContext) {
         Self.dedupCategories(in: context)
+        Self.pruneWidgetDoneMarks(in: context)
         InboxCountStore.refresh(in: context)
+    }
+
+    /// The widget's "done" toggle stores per-note UUIDs in App Group defaults.
+    /// The widget itself only clears them on archive-from-widget; everything
+    /// else (archive in-app, reassign category, hard-delete) leaves orphans.
+    /// Keep only UUIDs that still match active Inbox notes.
+    @MainActor
+    private static func pruneWidgetDoneMarks(in context: ModelContext) {
+        guard let categories = try? context.fetch(FetchDescriptor<Category>()),
+              let inbox = categories.first(where: { $0.name == "Inbox" }) else {
+            WidgetDoneNotes.prune(activeInboxIDs: [])
+            return
+        }
+        let inboxID = inbox.id
+        let allNotes = (try? context.fetch(FetchDescriptor<Note>())) ?? []
+        let active = Set(allNotes.lazy
+            .filter { $0.status == .active && $0.categoryID == inboxID }
+            .map(\.id))
+        WidgetDoneNotes.prune(activeInboxIDs: active)
     }
 
     /// Merge categories that share a name. Keeps the oldest, reassigns notes from
