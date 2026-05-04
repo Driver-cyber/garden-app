@@ -52,7 +52,12 @@
 		8EEDCE282F9D071D00FDC0C0 /* Exceptions for "garden" folder in "garden" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				CLAUDE.md,
+				DECISIONS.md,
 				Info.plist,
+				app-store-listing.md,
+				garden-app-tracker.html,
+				learned-log.json,
 			);
 			target = 8EEDCE1A2F9D071B00FDC0C0 /* garden */;
 		};
@@ -66,7 +71,6 @@
 		B0C7E6B32FA7BC50009BBE96 /* Exceptions for "garden" folder in "GardenWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Helpers/AddToGardenInboxIntent.swift,
 				Helpers/GardenStoreLocator.swift,
 				Helpers/InboxCountStore.swift,
 				Helpers/InboxGate.swift,
@@ -494,7 +498,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = GardenWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = Y3D7LWWL56;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GardenWidget/Info.plist;
@@ -506,7 +510,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.drivercyber.garden.GardenWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -526,7 +530,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = GardenWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = Y3D7LWWL56;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GardenWidget/Info.plist;
@@ -538,7 +542,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.drivercyber.garden.GardenWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

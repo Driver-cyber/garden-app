@@ -31,53 +31,11 @@ struct NoteComposerView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            HStack {
-                Menu {
-                    ForEach(categories) { cat in
-                        Button(cat.name) { draftCategoryID = cat.id }
-                    }
-                    Divider()
-                    Button {
-                        onManageCategories()
-                    } label: {
-                        Label("Manage categories…", systemImage: "pencil")
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "tag")
-                        Text(resolvedCategoryName)
-                        Image(systemName: "chevron.down")
-                            .font(.caption2)
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(Color.ink2)
-                }
-                Spacer()
+            if resolvedCategoryID == nil {
+                emptyStateView
+            } else {
+                composerContent
             }
-
-            TextField("New note…", text: $draft, axis: .vertical)
-                .lineLimit(isComposerFocused ? 4...8 : 1...4)
-                .focused($isComposerFocused)
-                .padding(12)
-                .frame(minHeight: isComposerFocused ? 96 : 40, alignment: .top)
-                .background(Color.paper)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .animation(.easeInOut(duration: 0.18), value: isComposerFocused)
-                .toolbar {
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Button("Done") { isComposerFocused = false }
-                            .foregroundStyle(Color.sageDeep)
-                        Spacer()
-                        Button("Add") { addNote() }
-                            .disabled(!canAdd)
-                            .foregroundStyle(canAdd ? Color.sageDeep : Color.ink3)
-                            .bold()
-                    }
-                }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -95,6 +53,85 @@ struct NoteComposerView: View {
         }
     }
 
+    @ViewBuilder
+    private var emptyStateView: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "tray")
+                    .foregroundStyle(Color.sageDeep)
+                Text("No categories yet")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.ink)
+                Spacer()
+            }
+            Text("Install the Garden Inbox Shortcut from Settings, or create your own category to start adding notes.")
+                .font(.footnote)
+                .foregroundStyle(Color.ink2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                onManageCategories()
+            } label: {
+                Label("Create category", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color.sageDeep)
+        }
+    }
+
+    @ViewBuilder
+    private var composerContent: some View {
+        HStack {
+            Menu {
+                ForEach(categories) { cat in
+                    Button(cat.name) { draftCategoryID = cat.id }
+                }
+                Divider()
+                Button {
+                    onManageCategories()
+                } label: {
+                    Label("Manage categories…", systemImage: "pencil")
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "tag")
+                    Text(resolvedCategoryName)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2)
+                }
+                .font(.subheadline)
+                .foregroundStyle(Color.ink2)
+            }
+            Spacer()
+        }
+
+        TextField("New note…", text: $draft, axis: .vertical)
+            .lineLimit(isComposerFocused ? 4...8 : 1...4)
+            .focused($isComposerFocused)
+            .padding(12)
+            .frame(minHeight: isComposerFocused ? 96 : 40, alignment: .top)
+            .background(Color.paper)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.line, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .animation(.easeInOut(duration: 0.18), value: isComposerFocused)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button("Done") { isComposerFocused = false }
+                        .foregroundStyle(Color.sageDeep)
+                    Spacer()
+                    Button("Add") { addNote() }
+                        .disabled(!canAdd)
+                        .foregroundStyle(canAdd ? Color.sageDeep : Color.ink3)
+                        .bold()
+                }
+            }
+    }
+
     private var canAdd: Bool {
         !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && resolvedCategoryID != nil
@@ -108,6 +145,9 @@ struct NoteComposerView: View {
             draft = ""
         }
         isComposerFocused = false
+        // Ensure the SQLite store has the new note before nudging the widget;
+        // the widget reads from the file directly and won't see in-memory inserts.
+        try? modelContext.save()
         InboxCountStore.refresh(in: modelContext)
     }
 

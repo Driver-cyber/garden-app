@@ -100,12 +100,14 @@ struct gardenApp: App {
     /// The widget's "done" toggle stores per-note UUIDs in App Group defaults.
     /// The widget itself only clears them on archive-from-widget; everything
     /// else (archive in-app, reassign category, hard-delete) leaves orphans.
-    /// Keep only UUIDs that still match active Inbox notes.
+    /// Keep only UUIDs that still match active Inbox notes. If the categories
+    /// fetch fails or the Inbox is temporarily missing, return without
+    /// pruning — the next foreground will retry. Pruning to an empty set in
+    /// that case would silently wipe every legitimate done-mark.
     @MainActor
     private static func pruneWidgetDoneMarks(in context: ModelContext) {
         guard let categories = try? context.fetch(FetchDescriptor<Category>()),
               let inbox = categories.first(where: { $0.name == "Inbox" }) else {
-            WidgetDoneNotes.prune(activeInboxIDs: [])
             return
         }
         let inboxID = inbox.id

@@ -134,7 +134,20 @@ enum InboxCursor {
 
         guard inboxNotes.count > 1 else { return }
 
-        let currentIndex = inboxNotes.firstIndex(where: { $0.id == currentID }) ?? 0
+        // Snapshot may be up to an hour stale (timeline policy `.after(next 1h)`).
+        // If the displayed note got archived/moved/deleted from the main app, fall
+        // back to the persisted cursor (last-tap position) before defaulting to 0,
+        // so Prev/Next don't jump to a meaningless position relative to where the
+        // user actually was.
+        let currentIndex: Int = {
+            if let idx = inboxNotes.firstIndex(where: { $0.id == currentID }) { return idx }
+            if let cursorString = GardenStoreLocator.sharedDefaults.string(forKey: InboxWidgetCursor.key),
+               let cursorID = UUID(uuidString: cursorString),
+               let idx = inboxNotes.firstIndex(where: { $0.id == cursorID }) {
+                return idx
+            }
+            return 0
+        }()
         let count = inboxNotes.count
         // (i + delta + count) % count handles negative deltas cleanly.
         let nextIndex = ((currentIndex + delta) % count + count) % count

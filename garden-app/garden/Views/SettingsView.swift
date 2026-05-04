@@ -141,7 +141,13 @@ struct SettingsView: View {
             .padding(.top, 4)
 
             Button {
-                InboxGate.enable(in: modelContext)
+                // If creating the Inbox category fails (rare — disk full, schema
+                // conflict, etc.), don't whisk the user off to Shortcuts.app —
+                // they'd return and find Inbox isn't actually set up with no
+                // signal at the moment of the tap. The intent's own gate (in
+                // AddToGardenInboxIntent) catches transient failures on the
+                // next Shortcut run.
+                guard InboxGate.enable(in: modelContext) != nil else { return }
                 if let url = URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c") {
                     openURL(url)
                 }

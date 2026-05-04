@@ -16,6 +16,19 @@ struct CategoryManagerSheet: View {
         return UUID(uuidString: s)
     }
 
+    /// Resolve where notes should land when a category is deleted.
+    /// Preference: legacy TBD (if user has one) → Inbox → any other category.
+    /// Returns nil only when the deleted category is the user's last one.
+    private func reassignmentTarget(excluding catID: UUID) -> Category? {
+        if let tbdID, let tbd = categories.first(where: { $0.id == tbdID && $0.id != catID }) {
+            return tbd
+        }
+        if let inbox = categories.first(where: { $0.name == "Inbox" && $0.id != catID }) {
+            return inbox
+        }
+        return categories.first(where: { $0.id != catID })
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -62,20 +75,16 @@ struct CategoryManagerSheet: View {
                 presenting: pendingDelete
             ) { cat in
                 let noteCount = allNotes.filter { $0.categoryID == cat.id }.count
-                Button(noteCount > 0
-                       ? "Delete & move \(noteCount) note\(noteCount == 1 ? "" : "s") to Ideas / TBD"
-                       : "Delete",
+                let target = reassignmentTarget(excluding: cat.id)
+                Button(deleteButtonLabel(noteCount: noteCount, target: target),
                        role: .destructive) {
                     deletePending()
                 }
                 Button("Cancel", role: .cancel) {}
             } message: { cat in
                 let noteCount = allNotes.filter { $0.categoryID == cat.id }.count
-                if noteCount > 0 {
-                    Text("Notes will be moved to Ideas / TBD, not deleted.")
-                } else {
-                    Text("This category has no notes.")
-                }
+                let target = reassignmentTarget(excluding: cat.id)
+                Text(deleteMessage(noteCount: noteCount, target: target))
             }
         }
     }
@@ -109,14 +118,31 @@ struct CategoryManagerSheet: View {
 
     private func deletePending() {
         guard let cat = pendingDelete else { return }
-        if let tbdID, tbdID != cat.id {
+        if let target = reassignmentTarget(excluding: cat.id) {
             for note in allNotes where note.categoryID == cat.id {
-                note.categoryID = tbdID
+                note.categoryID = target.id
             }
         }
         modelContext.delete(cat)
         try? modelContext.save()
         pendingDelete = nil
+    }
+
+    private func deleteButtonLabel(noteCount: Int, target: Category?) -> String {
+        guard noteCount > 0 else { return "Delete" }
+        let noun = "note\(noteCount == 1 ? "" : "s")"
+        if let target {
+            return "Delete & move \(noteCount) \(noun) to \(target.name)"
+        }
+        return "Delete & uncategorize \(noteCount) \(noun)"
+    }
+
+    private func deleteMessage(noteCount: Int, target: Category?) -> String {
+        guard noteCount > 0 else { return "This category has no notes." }
+        if let target {
+            return "Notes will be moved to \(target.name), not deleted."
+        }
+        return "Notes will lose their category but the text remains. Recover them from the All filter via Select → Move to."
     }
 }
 
