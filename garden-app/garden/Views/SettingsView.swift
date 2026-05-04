@@ -58,8 +58,6 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showShortcutLearnMore) {
                 ShortcutLearnMoreSheet()
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
             }
         }
     }

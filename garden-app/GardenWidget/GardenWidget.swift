@@ -8,6 +8,7 @@ import AppIntents
 struct InboxNoteSnapshot: Equatable {
     let id: UUID
     let text: String
+    let isDone: Bool
 }
 
 // MARK: - Entry
@@ -81,7 +82,11 @@ struct GardenProvider: TimelineProvider {
                 date: Date(),
                 inboxEnabled: true,
                 inboxCount: inboxNotes.count,
-                currentNote: InboxNoteSnapshot(id: current.id, text: current.text),
+                currentNote: InboxNoteSnapshot(
+                    id: current.id,
+                    text: current.text,
+                    isDone: WidgetDoneNotes.isDone(current.id)
+                ),
                 position: position
             )
         } catch {
@@ -171,9 +176,9 @@ struct InboxChecklistView: View {
     }
 
     private func noteRow(_ note: InboxNoteSnapshot) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Button(intent: ArchiveInboxNoteIntent(noteIDString: note.id.uuidString)) {
-                Image(systemName: "circle")
+        HStack(alignment: .top, spacing: 10) {
+            Button(intent: ToggleInboxNoteDoneIntent(noteIDString: note.id.uuidString)) {
+                Image(systemName: note.isDone ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
                     .foregroundStyle(Color.sageDeep)
             }
@@ -182,11 +187,19 @@ struct InboxChecklistView: View {
             Link(destination: URL(string: "garden://inbox")!) {
                 Text(note.text)
                     .font(.subheadline)
-                    .foregroundStyle(Color.ink)
+                    .foregroundStyle(note.isDone ? Color.ink2 : Color.ink)
+                    .strikethrough(note.isDone, color: Color.ink3)
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            Button(intent: ArchiveInboxNoteIntent(noteIDString: note.id.uuidString)) {
+                Image(systemName: "xmark.circle")
+                    .font(.title2)
+                    .foregroundStyle(Color.ink3)
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -365,7 +378,12 @@ private struct LockWidgetEntryView: View {
     GardenEntry(date: .now, inboxEnabled: false, inboxCount: 0, currentNote: nil, position: 0)
     GardenEntry(
         date: .now, inboxEnabled: true, inboxCount: 5,
-        currentNote: InboxNoteSnapshot(id: UUID(), text: "Pick up dry cleaning tomorrow afternoon"),
+        currentNote: InboxNoteSnapshot(id: UUID(), text: "Pick up dry cleaning tomorrow afternoon", isDone: false),
+        position: 1
+    )
+    GardenEntry(
+        date: .now, inboxEnabled: true, inboxCount: 5,
+        currentNote: InboxNoteSnapshot(id: UUID(), text: "Pick up dry cleaning tomorrow afternoon", isDone: true),
         position: 1
     )
 }

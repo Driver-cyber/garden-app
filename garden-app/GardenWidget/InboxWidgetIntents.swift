@@ -35,9 +35,35 @@ struct ArchiveInboxNoteIntent: AppIntent {
             try? context.save()
         }
 
-        // Clear cursor — provider will fall back to the first inbox note.
+        // Drop the widget-local "done" mark and the cursor so the next refresh
+        // picks the new first inbox note.
+        WidgetDoneNotes.setDone(id, false)
         GardenStoreLocator.sharedDefaults.removeObject(forKey: InboxWidgetCursor.key)
 
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+/// Toggle the widget-local "done" mark for an inbox note. Doesn't archive;
+/// the note stays visible in the widget queue. Stored in App Group defaults
+/// keyed by the note's UUID — done state is widget-only and intentionally
+/// doesn't sync to the main app or CloudKit.
+struct ToggleInboxNoteDoneIntent: AppIntent {
+    static var title: LocalizedStringResource = "Toggle Inbox Note Done"
+    static var openAppWhenRun: Bool = false
+
+    @Parameter(title: "Note ID")
+    var noteIDString: String
+
+    init() {}
+    init(noteIDString: String) {
+        self.noteIDString = noteIDString
+    }
+
+    func perform() async throws -> some IntentResult {
+        guard let id = UUID(uuidString: noteIDString) else { return .result() }
+        WidgetDoneNotes.setDone(id, !WidgetDoneNotes.isDone(id))
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
@@ -83,6 +109,27 @@ struct RewindInboxCursorIntent: AppIntent {
 
 enum InboxWidgetCursor {
     static let key = "garden.widget.inboxCursor"
+}
+
+/// Widget-local "I've eyeballed this" tracking. Stored as an array of UUID
+/// strings in shared App Group defaults; never written back to SwiftData.
+enum WidgetDoneNotes {
+    static let key = "garden.widget.doneNoteIDs"
+
+    static func isDone(_ id: UUID) -> Bool {
+        guard let ids = GardenStoreLocator.sharedDefaults.stringArray(forKey: key) else { return false }
+        return ids.contains(id.uuidString)
+    }
+
+    static func setDone(_ id: UUID, _ done: Bool) {
+        var ids = GardenStoreLocator.sharedDefaults.stringArray(forKey: key) ?? []
+        if done {
+            if !ids.contains(id.uuidString) { ids.append(id.uuidString) }
+        } else {
+            ids.removeAll { $0 == id.uuidString }
+        }
+        GardenStoreLocator.sharedDefaults.set(ids, forKey: key)
+    }
 }
 
 /// Shared cursor-advance logic for the next + previous intents.
