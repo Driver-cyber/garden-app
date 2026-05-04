@@ -12,6 +12,7 @@ struct SettingsView: View {
 
     @State private var includeArchived: Bool = true
     @State private var copyConfirm: Bool = false
+    @State private var showShortcutLearnMore: Bool = false
 
     private var inboxEnabled: Bool {
         categories.contains { $0.name == "Inbox" }
@@ -54,6 +55,11 @@ struct SettingsView: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(Color.sageDeep)
                 }
+            }
+            .sheet(isPresented: $showShortcutLearnMore) {
+                ShortcutLearnMoreSheet()
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -119,6 +125,24 @@ struct SettingsView: View {
                 .foregroundStyle(Color.ink2)
 
             Button {
+                showShortcutLearnMore = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "info.circle")
+                    Text("Learn more")
+                }
+                .font(.subheadline)
+                .foregroundStyle(Color.sageDeep)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .overlay(
+                    Capsule().stroke(Color.sageDeep.opacity(0.45), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+
+            Button {
                 InboxGate.enable(in: modelContext)
                 if let url = URL(string: "https://www.icloud.com/shortcuts/a7c75ea192d244c8bb7f17ee2fa7d29c") {
                     openURL(url)
@@ -130,7 +154,6 @@ struct SettingsView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(Color.sageDeep)
-            .padding(.top, 4)
 
             Text("Tip: in iOS Settings → Action Button, assign this Shortcut for the fastest capture from anywhere.")
                 .font(.caption)
@@ -234,6 +257,108 @@ struct SettingsView: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             copyConfirm = false
+        }
+    }
+}
+
+private struct ShortcutLearnMoreSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Quick capture, anywhere")
+                            .font(.custom("InstrumentSerif-Regular", size: 30))
+                            .italic()
+                            .foregroundStyle(Color.ink)
+
+                        Text("Install this Apple Shortcut once and you can drop a note into Garden's Inbox from anywhere on iOS — speak it or type it, no keyboard juggling, no app to open.")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.ink2)
+
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("Where you'll use it")
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundStyle(Color.ink3)
+                                .textCase(.uppercase)
+
+                            useRow(
+                                icon: "circle.circle",
+                                title: "Action Button",
+                                detail: "iPhone 15 Pro and newer — assign the Shortcut and capture from any screen."
+                            )
+                            useRow(
+                                icon: "lock.iphone",
+                                title: "Lock Screen",
+                                detail: "Add Shortcuts to your Lock Screen as a tap-to-run accessory."
+                            )
+                            useRow(
+                                icon: "square.grid.2x2",
+                                title: "Home Screen",
+                                detail: "Pin the Shortcut as an icon — tap to open the speak/type menu."
+                            )
+                            useRow(
+                                icon: "mic",
+                                title: "Siri",
+                                detail: "“Hey Siri, Quick capture in Garden.”"
+                            )
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.paper)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "lock.shield")
+                                    .foregroundStyle(Color.sageDeep)
+                                Text("Just an Apple Shortcut")
+                                    .font(.headline)
+                                    .foregroundStyle(Color.ink)
+                            }
+
+                            Text("This is a small open automation I built and shared. It runs locally on your device — no servers, no analytics, no third parties. You can open the Shortcut in Apple's Shortcuts app and read every step. Nothing leaves your phone.")
+                                .font(.footnote)
+                                .foregroundStyle(Color.ink2)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.sageTint.opacity(0.4))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle("About the Shortcut")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Close") { dismiss() }
+                        .foregroundStyle(Color.sageDeep)
+                }
+            }
+        }
+    }
+
+    private func useRow(icon: String, title: String, detail: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(Color.sageDeep)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.ink)
+                Text(detail)
+                    .font(.footnote)
+                    .foregroundStyle(Color.ink2)
+            }
         }
     }
 }
