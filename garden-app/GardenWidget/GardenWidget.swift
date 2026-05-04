@@ -84,13 +84,14 @@ struct GardenWidgetEntryView: View {
 private struct DashboardView: View {
     let entry: GardenEntry
 
-    // Always route Compose to the Shortcut. Reading entry.inboxEnabled here
-    // was unreliable — App Group UserDefaults can be stale in the widget
-    // process even after WidgetCenter.reloadAllTimelines(). For users who
-    // haven't installed the Shortcut yet, the count line below still nudges
-    // them to set up; Shortcuts.app's "Shortcut not found" is acceptable
-    // recovery feedback for the rare miss.
-    private let composeURL = URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!
+    // Open Garden directly to the composer instead of routing to the
+    // Shortcut. Widget Link → shortcuts://run-shortcut?name=… proved
+    // unreliable in iOS — UIApplication.openURL was choosing the host
+    // app over Shortcuts.app despite no claim to that scheme. The
+    // silent-capture path is still available via the Action Button and
+    // Siri ("Quick capture in Garden"), both of which invoke the user's
+    // Garden Inbox Shortcut without going through a widget Link.
+    private let composeURL = URL(string: "garden://compose")!
 
     var body: some View {
         VStack(spacing: 8) {
@@ -194,10 +195,10 @@ private struct QuickComposeAccessoryView: View {
     let enabled: Bool
 
     var body: some View {
-        // Always route to the Shortcut for the same reason as DashboardView:
-        // App Group defaults sync is too slow to gate a tap action on. The
-        // `enabled` flag is kept only as a hint for the icon glyph.
-        Link(destination: URL(string: "shortcuts://run-shortcut?name=Garden%20Inbox")!) {
+        // Same routing as the dashboard Compose: open Garden's composer.
+        // Lock-screen taps require unlock anyway, so the trade-off is
+        // smaller here. Silent capture stays on the Action Button.
+        Link(destination: URL(string: "garden://compose")!) {
             ZStack {
                 AccessoryWidgetBackground()
                 Image(systemName: "tray.and.arrow.down")
